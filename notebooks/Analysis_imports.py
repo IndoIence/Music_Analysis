@@ -56,6 +56,7 @@ def names_very_different(lastfm_name, genius_name):
             return False
     return True
 
+
 ### TODO: try except for timeouts and other errors
 def scrape_artist_songs(artist_list, max_songs=2000, verbose=False, save_small_artists=True):
     genius = lyricsgenius.Genius(token, verbose=verbose, timeout=GENIUS_TIMEOUT, sleep_time=GENIUS_SLEEP_TIME)
@@ -86,6 +87,12 @@ def scrape_artist_songs(artist_list, max_songs=2000, verbose=False, save_small_a
         # Check the number of words in the songs. If there are below 30k save to the small artists
         songs_lyrics = [clean_song_text(song.lyrics) for song in artist.songs]
         word_count = count_words_in_lyrics(songs_lyrics)
+
+        # before saving check if there are any / or ? in the name -> if so replace them
+        if '/' in artist_name or '?' in artist_name:
+            artist_name = artist_name.replace('/', ' ').replace('?', ' ')
+            logging.info(
+                f'Changed name of the artist to {artist_name} because of the slashes/question marks in the name')
         if word_count > 30000:
             with open(scrape_folder_prefix + artist_name, 'wb') as f:
                 pickle.dump(artist, f)
