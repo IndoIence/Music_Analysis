@@ -58,20 +58,30 @@ def names_very_different(lastfm_name, genius_name):
 
 
 ### TODO: try except for timeouts and other errors
+### TODO: often genius outputs a well known english artist ie (Ariana Grande, Chief Keef) find a way to mitigate those
+### TODO: handling timout exceptions and HTTPERRORs
+##
 def scrape_artist_songs(artist_list, max_songs=2000, verbose=False, save_small_artists=True):
     genius = lyricsgenius.Genius(token, verbose=verbose, timeout=GENIUS_TIMEOUT, sleep_time=GENIUS_SLEEP_TIME)
     scrape_folder_prefix = '../scraped_data/Genius/'
     for artist_name in artist_list:
         logging.info(f"Beginning search for {artist_name}")
-        artist = genius.search_artist(artist_name, max_songs=max_songs)
+        try:
+            artist = genius.search_artist(artist_name, max_songs=max_songs)
+        except TimeoutError as err:
+            logging.exception(err)
+        except Exception as err:
+            logging.exception(err)
+
         # when the song search is empty it probably means that there are no songs in genius to scrape
         if not artist:
             logging.info(f"Nothing found for: {artist_name}")
             continue
         if names_very_different(artist_name, artist.name):
             # changing name here is a bad practice and can be problematic in the future, but it is late and i am lazy to rewrite more
+            last_fm_name = artist_name
             artist_name = artist_name + '(' + artist.name + ')'
-            print(f'Name from lastFM: {artist_name},\nName from Genius {artist.name}')
+            print(f'Name from lastFM: {last_fm_name},\nName from Genius {artist.name}')
             logging.warning(f'Name from lastFM: {artist_name}, Name from Genius {artist.name}')
         albums = genius.search_albums(artist_name)
         album_names = [album['result']['name'] for album in albums['sections'][0]['hits']]
