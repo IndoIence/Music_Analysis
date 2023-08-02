@@ -1,14 +1,28 @@
 import requests
 import time
-from API_KEYS import LAST_FM_API_KEY, LAST_FM_USER_AGENT
+from config import LAST_FM_API_KEY, LAST_FM_USER_AGENT
+from dataclasses import dataclass
+
+@dataclass
+class Artysta:
+    name: str
+    url: str
+    def __key(self):
+         return self.name
+    def __hash__(self):
+        return hash(self.__key())
+    def __eq__(self, other):
+        if isinstance(other, Artysta):
+            return self.__key() == other.__key()
+
+
 
 url = 'http://ws.audioscrobbler.com/2.0/'
 headers = {
     'user-agent': LAST_FM_USER_AGENT
 }
-def get_tag_artists(tag, API_KEY=LAST_FM_API_KEY, max_pages=30):
+def get_tag_artists(tag, API_KEY=LAST_FM_API_KEY, max_pages=30, page=1):
     all_artists = []
-    page = 1
     params = {
         'tag': tag,
         'api_key': API_KEY,
@@ -28,12 +42,12 @@ def get_tag_artists(tag, API_KEY=LAST_FM_API_KEY, max_pages=30):
             print(f"Error: {data['message']}")
             break
         else:
-            artists_batch = [artist['name'] for artist in data['topartists']['artist']]
+            artists_batch = [Artysta(artist['name'], artist['url']) for artist in data['topartists']['artist']]
             all_artists.extend(artists_batch)
 
             if data['topartists']['@attr']['page'] == data['topartists']['@attr']['totalPages']:
                 print('Reached max page')
-                print('Number of pages', data['topartists']['@attr']['totalPages'])
+                print('Number of pages searched', data['topartists']['@attr']['totalPages'])
                 break
             if page == max_pages:
                 break
@@ -43,38 +57,38 @@ def get_tag_artists(tag, API_KEY=LAST_FM_API_KEY, max_pages=30):
         # wait for the next request
         time.sleep(0.25)
     return all_artists
-
-def get_two_tag_artists(tag1, tag2, API_KEY=LAST_FM_API_KEY, max_pages=30):
-    all_artists = []
-    page = 1
-    params = {
-        'tag': tag1,
-        'api_key': API_KEY,
-        'method': 'tag.getTopArtists',
-        'format': 'json',
-        'page': page,
-    }
-    while True:
-
-        response = requests.get(url=url, headers=headers, params=params)
-        data = response.json()
-
-        if 'error' in data:
-            print(f"Error: {data['message']}")
-            break
-        else:
-            artists_batch = [artist['name'] for artist in data['topartists']['artist']]
-            all_artists.extend(artists_batch)
-
-            if data['topartists']['@attr']['page'] == data['topartists']['@attr']['totalPages']:
-                print('Reached max page')
-                print('Number of pages', data['topartists']['@attr']['totalPages'])
-                break
-            if page == max_pages:
-                break
-
-            page += 1
-            params['page'] = page
-        # wait for the next request
-        time.sleep(0.25)
-    return all_artists
+#
+# def get_two_tag_artists(tag1, tag2, API_KEY=LAST_FM_API_KEY, max_pages=30):
+#     all_artists = []
+#     page = 1
+#     params = {
+#         'tag': tag1,
+#         'api_key': API_KEY,
+#         'method': 'tag.getTopArtists',
+#         'format': 'json',
+#         'page': page,
+#     }
+#     while True:
+#
+#         response = requests.get(url=url, headers=headers, params=params)
+#         data = response.json()
+#
+#         if 'error' in data:
+#             print(f"Error: {data['message']}")
+#             break
+#         else:
+#             artists_batch = [artist['name'] for artist in data['topartists']['artist']]
+#             all_artists.extend(artists_batch)
+#
+#             if data['topartists']['@attr']['page'] == data['topartists']['@attr']['totalPages']:
+#                 print('Reached max page')
+#                 print('Number of pages', data['topartists']['@attr']['totalPages'])
+#                 break
+#             if page == max_pages:
+#                 break
+#
+#             page += 1
+#             params['page'] = page
+#         # wait for the next request
+#         time.sleep(0.25)
+#     return all_artists
