@@ -1,0 +1,3 @@
+requests~=2.24.0
+lyricsgenius~=3.0.1
+nltk~=3.5
