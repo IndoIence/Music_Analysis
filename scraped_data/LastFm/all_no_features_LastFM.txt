@@ -1753,7 +1753,7 @@ Majster NS
 LJ Karwel
 Black Scratch
 Raca
-Gres\Snatch
+Gres/Snatch
 Rusina
 Litery Jutra
 Bla Bla
