@@ -6,12 +6,9 @@ from itertools import chain
 import lyricsgenius
 import nltk
 
-# from config import GENIUS_BEARER as token
-# from config import LOGFILE, GENIUS_TIMEOUT, GENIUS_SLEEP_TIME
-LOGFILE = 'loglog'
-token = 'Z0d0LxAxkb2S7MGCGnLgegJkPXvFoaXJx4pMpuRZcfgeRH_zZJD-mSEPhLe1vHO7'
-GENIUS_SLEEP_TIME = 0.08
-GENIUS_TIMEOUT = 3
+from config import GENIUS_BEARER as token
+from config import LOGFILE, GENIUS_TIMEOUT, GENIUS_SLEEP_TIME
+
 
 
 logging.basicConfig(
