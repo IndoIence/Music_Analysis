@@ -6,8 +6,13 @@ from itertools import chain
 import lyricsgenius
 import nltk
 
-from config import GENIUS_BEARER as token
-from config import LOGFILE, GENIUS_TIMEOUT, GENIUS_SLEEP_TIME
+# from config import GENIUS_BEARER as token
+# from config import LOGFILE, GENIUS_TIMEOUT, GENIUS_SLEEP_TIME
+LOGFILE = 'loglog'
+token = 'Z0d0LxAxkb2S7MGCGnLgegJkPXvFoaXJx4pMpuRZcfgeRH_zZJD-mSEPhLe1vHO7'
+GENIUS_SLEEP_TIME = 0.08
+GENIUS_TIMEOUT = 3
+
 
 logging.basicConfig(
     filename=LOGFILE,
@@ -59,6 +64,7 @@ def names_very_different(lastfm_name, genius_name):
 
 ### TODO: try except for timeouts and other errors
 ### TODO: often genius outputs a well known english artist ie (Ariana Grande, Chief Keef) find a way to mitigate those
+### TODO: For the name Tau Genius returns 2 Chainz (???)
 ### TODO: handling timout exceptions
 ##
 def scrape_artist_songs(artist_list, max_songs=2000, verbose=False, save_small_artists=True):
