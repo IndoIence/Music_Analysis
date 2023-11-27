@@ -1,6 +1,7 @@
 import requests
 import time
-from config import LAST_FM_API_KEY, LAST_FM_USER_AGENT
+import logging
+from config import LAST_FM_API_KEY, LAST_FM_USER_AGENT, LOGFILE_LASTFM
 from dataclasses import dataclass
 
 @dataclass
@@ -34,15 +35,19 @@ def get_tag_artists(tag, API_KEY=LAST_FM_API_KEY, max_pages=30, page=1):
 
         if page % 10 == 0:
             print(f'Searching page nr {page}')
-
-        response = requests.get(url=url, headers=headers, params=params)
+        try:
+            response = requests.get(url=url, headers=headers, params=params)
+        except Exception as e:
+            logging.error(e)
+            continue
         data = response.json()
 
         if 'error' in data:
             print(f"Error: {data['message']}")
-            break
+            logging.error(f"Error for {params}", data['message'])
+            continue
         else:
-            artists_batch = [Artysta(artist['name'], artist['url']) for artist in data['topartists']['artist']]
+            artists_batch = [artist for artist in data['topartists']['artist']]
             all_artists.extend(artists_batch)
 
             if data['topartists']['@attr']['page'] == data['topartists']['@attr']['totalPages']:
@@ -57,38 +62,3 @@ def get_tag_artists(tag, API_KEY=LAST_FM_API_KEY, max_pages=30, page=1):
         # wait for the next request
         time.sleep(0.25)
     return all_artists
-#
-# def get_two_tag_artists(tag1, tag2, API_KEY=LAST_FM_API_KEY, max_pages=30):
-#     all_artists = []
-#     page = 1
-#     params = {
-#         'tag': tag1,
-#         'api_key': API_KEY,
-#         'method': 'tag.getTopArtists',
-#         'format': 'json',
-#         'page': page,
-#     }
-#     while True:
-#
-#         response = requests.get(url=url, headers=headers, params=params)
-#         data = response.json()
-#
-#         if 'error' in data:
-#             print(f"Error: {data['message']}")
-#             break
-#         else:
-#             artists_batch = [artist['name'] for artist in data['topartists']['artist']]
-#             all_artists.extend(artists_batch)
-#
-#             if data['topartists']['@attr']['page'] == data['topartists']['@attr']['totalPages']:
-#                 print('Reached max page')
-#                 print('Number of pages', data['topartists']['@attr']['totalPages'])
-#                 break
-#             if page == max_pages:
-#                 break
-#
-#             page += 1
-#             params['page'] = page
-#         # wait for the next request
-#         time.sleep(0.25)
-#     return all_artists
