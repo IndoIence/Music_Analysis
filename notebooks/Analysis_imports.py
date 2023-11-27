@@ -7,12 +7,12 @@ import lyricsgenius
 import nltk
 
 from config import GENIUS_BEARER as token
-from config import LOGFILE, GENIUS_TIMEOUT, GENIUS_SLEEP_TIME
+from config import LOGFILE_GENIUS, GENIUS_TIMEOUT, GENIUS_SLEEP_TIME
 
 
 
 logging.basicConfig(
-    filename=LOGFILE,
+    filename=LOGFILE_GENIUS,
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
@@ -72,7 +72,11 @@ def scrape_artist_songs(artist_list, max_songs=2000, verbose=False, save_small_a
         try:
             artist = genius.search_artist(artist_name, max_songs=max_songs)
         except TimeoutError as err:
-            logging.warning(err)
+            logging.error(f'timeout for {artist_name}', err)
+            continue
+        except Exception as e:
+            logging.error(f'Different error for {artist_name}', e)
+            continue
         # when the song search is empty it probably means that there are no songs in genius to scrape
         if not artist:
             logging.info(f"Nothing found for: {artist_name}")
@@ -80,8 +84,9 @@ def scrape_artist_songs(artist_list, max_songs=2000, verbose=False, save_small_a
         if names_very_different(artist_name, artist.name):
             # changing name here is a bad practice and can be problematic in the future, but it is late and i am lazy to rewrite more
             artist_name = artist_name + '(' + artist.name + ')'
-            print(f'Name from lastFM: {artist_name},\nName from Genius {artist.name}')
-            logging.warning(f'Name from lastFM: {artist_name}, Name from Genius {artist.name}')
+            message = f'Difference in names: Name from lastFM: {artist_name},\nName from Genius {artist.name}'
+            print(message)
+            logging.warning(message)
         albums = genius.search_albums(artist_name)
         album_names = [album['result']['name'] for album in albums['sections'][0]['hits']]
 
