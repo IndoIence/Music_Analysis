@@ -1,7 +1,7 @@
 import requests
 import time
 import logging
-from config import LAST_FM_API_KEY, LAST_FM_USER_AGENT, LOGFILE_LASTFM
+from notebooks.config import LAST_FM_API_KEY, LAST_FM_USER_AGENT, LOGFILE_LASTFM, LAST_FM_FEATURES
 from dataclasses import dataclass
 
 @dataclass

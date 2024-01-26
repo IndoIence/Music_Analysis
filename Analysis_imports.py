@@ -6,8 +6,8 @@ from itertools import chain
 import lyricsgenius
 import nltk
 
-from config import GENIUS_BEARER as token
-from config import LOGFILE_GENIUS, GENIUS_TIMEOUT, GENIUS_SLEEP_TIME
+from notebooks.config import GENIUS_BEARER as token
+from notebooks.config import LOGFILE_GENIUS, GENIUS_TIMEOUT, GENIUS_SLEEP_TIME
 
 
 
@@ -35,7 +35,7 @@ def clean_song_text(lyrics):
     lyrics = lyrics[:-lyrics_end]
     # should ignore anything in the square brackets
     lyrics = clean_brackets(lyrics)
-    # remove interpunction
+    # remove interpunctionbrack
     tokenizer = nltk.WhitespaceTokenizer()
     lyrics = tokenizer.tokenize(lyrics)
     # lyrics.replace(r'.|,|!|?','')
@@ -43,6 +43,7 @@ def clean_song_text(lyrics):
     # lyrics = re.split(r' |\n', lyrics)
     # # remove empty strings
     # lyrics = list(filter(None, lyrics))
+    print(lyrics)
     return lyrics
 
 
@@ -64,13 +65,14 @@ def names_very_different(lastfm_name, genius_name):
 ### TODO: For the name Tau Genius returns 2 Chainz (???)
 ### TODO: handling timout exceptions
 ##
-def scrape_artist_songs(artist_list, max_songs=2000, verbose=False, save_small_artists=True):
+def scrape_artist_songs(artist_list, artist_id, max_songs=2000, verbose=False, save_small_artists=True, features=True):
     genius = lyricsgenius.Genius(token, verbose=verbose, timeout=GENIUS_TIMEOUT, sleep_time=GENIUS_SLEEP_TIME)
     scrape_folder_prefix = '../scraped_data/Genius/'
     for artist_name in artist_list:
+        artist_id +=1
         logging.info(f"Beginning search for {artist_name}")
         try:
-            artist = genius.search_artist(artist_name, max_songs=max_songs)
+            artist = genius.search_artist(artist_name, max_songs=max_songs, include_features=features)
         except TimeoutError as err:
             logging.error(f'timeout for {artist_name}', err)
             continue
@@ -90,7 +92,7 @@ def scrape_artist_songs(artist_list, max_songs=2000, verbose=False, save_small_a
         albums = genius.search_albums(artist_name)
         album_names = [album['result']['name'] for album in albums['sections'][0]['hits']]
 
-        # when the artist doesn't have 3 albums  or 15 songs don't consider them
+        # when the artist doesn't have 3 album or 15 songs
         if len(album_names) < 3:
             print(f'{artist_name} has only {len(album_names)} albums')
             logging.info(f'{artist_name} has only {len(album_names)} albums')
@@ -99,21 +101,17 @@ def scrape_artist_songs(artist_list, max_songs=2000, verbose=False, save_small_a
             print(f'artist has only {nr_of_songs} songs')
             logging.info(f'artist has only {nr_of_songs} songs')
         # Check the number of words in the songs. If there are below 30k save to the small artists
-        songs_lyrics = [clean_song_text(song.lyrics) for song in artist.songs]
-        word_count = count_words_in_lyrics(songs_lyrics)
+        #songs_lyrics = [clean_song_text(song.lyrics) for song in artist.songs]
+        #word_count = count_words_in_lyrics(songs_lyrics)
 
         # before saving check if there are any / or ? in the name -> if so replace them
         if '/' in artist_name or '?' in artist_name:
             artist_name = artist_name.replace('/', ' ').replace('?', ' ')
             logging.info(
                 f'Changed name of the artist to {artist_name} because of the slashes/question marks in the name')
-        if word_count > 30000:
-            with open(scrape_folder_prefix + artist_name, 'wb') as f:
-                pickle.dump(artist, f)
-        else:
-            with open(scrape_folder_prefix + 'small_artists/' + artist_name, 'wb') as f:
-                pickle.dump(artist, f)
-        logging.info(f"Ending search for {artist_name}")
+        with open(scrape_folder_prefix + artist_name, 'wb') as f:
+            pickle.dump(artist, f)
+        logging.info("Ending search for {} : {}".format(artist_id, artist_name))
 
 
 def count_words_in_lyrics(songs):
