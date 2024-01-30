@@ -14,4 +14,4 @@ Cosine Similarity
 t-SNE
 
 Naming scheme for artist:
-pickled into artist_name_01.artPkl
+pickled into artist_name.artPkl

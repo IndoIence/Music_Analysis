@@ -1,21 +1,18 @@
 # %%
 import pickle
-import sys
-import os
-import json
 from tqdm import tqdm
+import os
 from pathlib import Path
-from collections import Counter
-from Analysis_imports import clean_song_text
-file_path = Path('scraped_data/Genius/MyArtists')
-pl_artists_path = Path('scraped_data/artists_pl')
-genius_path = file_path.parent
-artists_files = os.listdir(file_path)
-from pympler.asizeof import asizeof
-
-# i need to rename to a consistent file artPkl
+import logging
+from utils import CONFIG, get_all_urls
+from Analysis_imports import scrape_artists_songs
+config_G = CONFIG["Genius_scraping"]
+logging.basicConfig(
+    filename=config_G["GENIUS_LOGFILE"],
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 # %%
-
-
+scrape_artists_songs(["Tau"])
 
 # %%
