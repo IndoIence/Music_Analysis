@@ -6,7 +6,7 @@ from pathlib import Path
 import lyricsgenius
 import nltk
 from tqdm import tqdm
-from utils import CONFIG, MyArtist
+from utils import CONFIG, MyArtist, clean_brackets, clean_song_text
 config_G = CONFIG["Genius_scraping"]
 
 logging.basicConfig(
@@ -16,33 +16,6 @@ logging.basicConfig(
 )
 
 
-def clean_song_text(lyrics):
-    def clean_brackets(text):
-        pattern = r'\[.*?\]'
-        return re.sub(pattern, '', text)
-
-    # find the first occurance of the word "Lyrics", and discard what's before that
-    lyrics_start = lyrics.find('Lyrics') + len('Lyrics')
-    lyrics = lyrics[lyrics_start:].lower()
-    # cut out the end of the string (the word Embed and the number)
-    # search for the number on the end and if it exists cut out from it
-    if re.search(r'\d+', lyrics[::-1]):
-        lyrics_end = re.search(r'\d+', lyrics[::-1]).span()[1]
-    else:
-        lyrics_end = 1
-    lyrics = lyrics[:-lyrics_end]
-    # should ignore anything in the square brackets
-    lyrics = clean_brackets(lyrics)
-    # remove interpunctionbrack
-    tokenizer = nltk.WhitespaceTokenizer()
-    lyrics = tokenizer.tokenize(lyrics)
-    # lyrics.replace(r'.|,|!|?','')
-    # # split on newlines and on spaces
-    # lyrics = re.split(r' |\n', lyrics)
-    # # remove empty strings
-    # lyrics = list(filter(None, lyrics))
-    print(lyrics)
-    return lyrics
 
 
 def names_very_different(lastfm_name, genius_name):
@@ -82,10 +55,11 @@ def scrape_artists_songs(artist_list: list[str]):
             out_path2 = Path(CONFIG['artists_non_pl_path'])
         file_name = sanitize_art_name(my_artist.name)
         save_artist_to_pkl(out_path2, artist, file_name)
-            
+
+# for legacy reasons (i am retarded)this is outside this should be in the save_artist_to_pkl
 def sanitize_art_name(name:str)-> str:
-    name.replace(' ', '_').replace(".", "_")
-    return name + '.artPkl'
+    name = name.replace(' ', '_').replace(".", "_")
+    return  name + '.artPkl'
         
 
 

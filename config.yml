@@ -1,6 +1,7 @@
 all_artists_urls_path : scraped_data/Genius/all_artists_urls.txt
 artists_pl_path : scraped_data/artists_pl
 artists_non_pl_path : scraped_data/artists_not_pl
+generated_data_path : generated_data
 
 Genius_scraping :
   max_songs : 2000
