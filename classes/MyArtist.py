@@ -56,10 +56,12 @@ class MyArtist(Artist):
                 output.append(MySong(song))
         return output
     
-    def get_40k_words(self, limit=40000) -> str:
+    def get_35k_words(self, limit=35000, only_art=False) -> str:
         result = ''
         count = 0
         for song in self.songs:
+            if song.language != 'pl':
+                continue
             song_cleaned = song.clean_song_text()
             words = word_tokenize(song_cleaned)
             count += len(words)
@@ -68,7 +70,7 @@ class MyArtist(Artist):
                 continue
             diff = limit - count
             return result + " ".join(words[:diff])
-
+        return result
         raise ValueError(f"Artist {self.name} doesn't have {limit} words in avialable songs")
 
 def count_words(text: str):

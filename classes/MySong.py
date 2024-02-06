@@ -5,10 +5,12 @@ class MySong(Song):
         self.__dict__ = song.__dict__
         self.language = None
 
-    def clean_song_text(self):
+    def clean_song_text(self, lower=False):
         # find the first occurance of the word "Lyrics", and discard what's before that
         lyrics_start = self.lyrics.find('Lyrics') + len('Lyrics')
-        lyrics_cleaned = self.lyrics[lyrics_start:].lower()
+        lyrics_cleaned = self.lyrics[lyrics_start:]
+        if lower:
+            lyrics_cleaned = lyrics_cleaned.lower()
         # cut out the end of the string (the word Embed and the number)
         # search for the number on the end and if it exists cut out from it
         if re.search(r'\d+', lyrics_cleaned[::-1]):

@@ -6,7 +6,7 @@ from pathlib import Path
 import lyricsgenius
 import nltk
 from tqdm import tqdm
-from utils import CONFIG, MyArtist, clean_brackets, clean_song_text
+from utils import CONFIG, MyArtist, sanitize_art_name, save_artist_to_file
 config_G = CONFIG["Genius_scraping"]
 
 logging.basicConfig(
@@ -44,7 +44,7 @@ def scrape_artists_songs(artist_list: list[str]):
          # save to the general file
         # in the general directory the file names are without .artPkl
         # -> for now only MyArtists have that
-        save_artist_to_pkl(out_path, artist, artist_name)
+        save_artist_to_file(out_path, artist, artist_name)
         my_artist = MyArtist(artist)
         my_artist.get_artist_language()      
 
@@ -54,12 +54,9 @@ def scrape_artists_songs(artist_list: list[str]):
         else:
             out_path2 = Path(CONFIG['artists_non_pl_path'])
         file_name = sanitize_art_name(my_artist.name)
-        save_artist_to_pkl(out_path2, artist, file_name)
+        save_artist_to_file(out_path2, artist, file_name)
 
-# for legacy reasons (i am retarded)this is outside this should be in the save_artist_to_pkl
-def sanitize_art_name(name:str)-> str:
-    name = name.replace(' ', '_').replace(".", "_")
-    return  name + '.artPkl'
+
         
 
 
@@ -110,14 +107,3 @@ def scrape_artist_songs(artist_name: str):
         #songs_lyrics = [clean_song_text(song.lyrics) for song in artist.songs]
         #word_count = count_words_in_lyrics(songs_lyrics)
     return artist
-
-
-def save_artist_to_pkl(out_path: Path, artist, artist_name: str):
-    # before saving check if there are any / or ? in the name -> if so replace them
-        if '/' in artist_name or '?' in artist_name:
-            artist_name = artist_name.replace('/', ' ').replace('?', ' ')
-            logging.info(
-                f'Changed name of the artist to {artist_name} because of the slashes/question marks in the name')
-        with open(out_path / artist_name, 'wb') as f:
-            pickle.dump(artist, f)
-        logging.info("Ending search for: {}".format(artist_name))
