@@ -11,13 +11,14 @@ class MySong(Song):
         lyrics_cleaned = self.lyrics[lyrics_start:]
         if lower:
             lyrics_cleaned = lyrics_cleaned.lower()
-        # cut out the end of the string (the word Embed and the number)
+        # cut out the end of the string (the word Embed and the number or just the word Embed)
         # search for the number on the end and if it exists cut out from it
-        if re.search(r'\d+', lyrics_cleaned[::-1]):
-            lyrics_end = re.search(r'\d+', lyrics_cleaned[::-1]).span()[1]
-        else:
-            lyrics_end = 1
-        lyrics_cleaned = lyrics_cleaned[:-lyrics_end]
+        if 'Embed' == lyrics_cleaned[-5:]:
+            lyrics_cleaned = lyrics_cleaned[:-5]
+        pattern = '^\s*\d+\s*$'
+        lyrics_cleaned = re.sub(pattern, '', lyrics_cleaned)
+        # clean some bullshit
+        lyrics_cleaned = re.sub(r'You might also like\[', '[',  lyrics_cleaned)
         # should ignore anything in the square brackets
         lyrics_cleaned = clean_brackets(lyrics_cleaned)
         return lyrics_cleaned
