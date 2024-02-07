@@ -18,7 +18,7 @@ def get_artist(name: str, path: Path = Path(CONFIG["artists_pl_path"])):
 def get_artists(path: Path = Path(CONFIG["artists_pl_path"]) ):
     art_paths = [f for f in os.listdir(path) if os.path.isfile(path / f)]
     for art_path in art_paths:
-        art: Artist = get_artist(art_path, path)
+        art = get_artist(art_path, path)
         yield art
 
 def get_all_lyrics(art):
@@ -60,7 +60,7 @@ def load_jsonl(p:Path):
 
 # for legacy reasons (i am retarded)this is outside this should be in the save_artist_to_pkl
 def sanitize_art_name(name:str)-> str:
-    return  name.replace(' ', '_').replace(".", "_").replace('/', ' ').replace('?', ' ')
+    return  name.replace(' ', '_').replace(".", "_").replace('/', ' ').replace('?', ' ').strip()
 def save_artist_to_file(out_path: Path, artist, artist_name: str, suffix:str = '.artPkl'):
     # before saving check if there are any / or ? in the name -> if so replace them
         if '/' in artist_name or '?' in artist_name:
