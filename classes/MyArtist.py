@@ -59,7 +59,7 @@ class MyArtist(Artist):
                 output.append(MySong(song))
         return output
     
-    def get_limit_songs(self, limit:int=35000, prim_art: bool=False, only_art:bool=False) -> str:
+    def get_limit_songs(self, limit:int=35000, prim_art: bool=False, only_art:bool=False) -> list[Song]:
         # returns list of songs up to the limit of words
         # the words are counted ater cleaning
         count = 0
