@@ -36,6 +36,8 @@ def scrape_artists_songs(artist_list: list[str]):
     urls = open(config_G["GENIUS_URLS_PATH"], 'r').read().strip().split()
     for artist_id, artist_name in enumerate(tqdm(artist_list)):
         artist = scrape_artist_songs(artist_name)
+        if not artist:
+            continue
         # check if already saved
         if artist.url in urls:
             logging.info(f"Artist url {artist.url} already saved")
@@ -46,15 +48,13 @@ def scrape_artists_songs(artist_list: list[str]):
         # -> for now only MyArtists have that
         save_artist_to_file(out_path, artist, artist_name)
         my_artist = MyArtist(artist)
-        my_artist.get_artist_language()      
-
         # save to specific pl / non pl directories
         if my_artist.language == "pl":
             out_path2 = Path(CONFIG['artists_pl_path'])
         else:
             out_path2 = Path(CONFIG['artists_non_pl_path'])
         file_name = sanitize_art_name(my_artist.name)
-        save_artist_to_file(out_path2, artist, file_name)
+        save_artist_to_file(out_path2, my_artist, file_name)
 
 
         
@@ -106,4 +106,5 @@ def scrape_artist_songs(artist_name: str):
         # Check the number of words in the songs. If there are below 30k save to the small artists
         #songs_lyrics = [clean_song_text(song.lyrics) for song in artist.songs]
         #word_count = count_words_in_lyrics(songs_lyrics)
+    logging.info(f"End search for : {artist.name}. Found {len(artist.songs)} songs")
     return artist
