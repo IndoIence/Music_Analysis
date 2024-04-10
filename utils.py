@@ -56,7 +56,7 @@ def clean_brackets(text):
 def load_jsonl(p:Path):
     with open(p, 'r') as f:
         while line := f.readline():
-            yield json.load(line)
+            yield json.loads(line)
 
 # for legacy reasons (i am retarded)this is outside this should be in the save_artist_to_pkl
 def sanitize_art_name(name:str)-> str:
@@ -69,3 +69,19 @@ def save_artist_to_file(out_path: Path, artist, artist_name: str, suffix:str = '
             #     f'Changed name of the artist to {artist_name} because of the slashes/question marks in the name')
         with open(out_path / (artist_name + suffix), 'wb') as f:
             pickle.dump(artist, f)
+
+def get_wsd_data():
+    """for all artists return a tuple (file name, list) 
+    where list has wsd for each song"""
+    path = Path(CONFIG['wsd_outputs'])
+    wsd_files = [f for f in os.listdir(path) if os.path.isfile(path / f)]
+    for wsd_file in wsd_files:
+        result = []
+        for song in load_jsonl(path / wsd_file):
+            result.append(song['wsd'])
+        yield (wsd_file, result)
+
+def get_stopwords():
+    path = CONFIG['stopwords']
+    return [line.rstrip() for line in open(path)]
+        
