@@ -2,6 +2,7 @@ notebooks/LastFM_scraping.ipynb
 notebooks/First_Genius_Scrape.ipynb
 config.py
 /scraped_data/*
+!/scraped_data/all_urls.txt
 /logs
 /output_data
 notebook.ipynb
