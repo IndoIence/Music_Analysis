@@ -33,8 +33,9 @@ def names_very_different(lastfm_name, genius_name):
 ### TODO: often genius outputs a well known english artist ie (Ariana Grande, Chief Keef) find a way to mitigate those
 ### TODO: For the name Tau Genius returns 2 Chainz (???)
 def scrape_artists_songs(artist_list: list[str]):
-    urls = open(config_G["GENIUS_URLS_PATH"], 'r').read().strip().split()
-    urls_set = set((url.lower() for url in urls))
+    urls = open(CONFIG["all_artists_urls_path"], 'r').read().strip().split()
+    # skip comments
+    urls_set = set((url.lower() for url in urls if url.lstrip()[0] != '#'))
     for artist_id, artist_name in enumerate(tqdm(artist_list)):
         artist = scrape_artist_songs(artist_name)
         if not artist:
@@ -58,9 +59,11 @@ def scrape_artists_songs(artist_list: list[str]):
             out_path2 = Path(CONFIG['artists_non_pl_path'])
         file_name = sanitize_art_name(my_artist.name)
         save_artist_to_file(out_path2, my_artist, file_name)
-    if len(urls) != len(urls_set):
-        # new artist added so update of is needed in the all_urls.txt file
-        with open(config_G["GENIUS_URLS_PATH"], 'w') as f:
+    if len(urls) != len(urls):
+        # new artist added so update is needed in the all_urls.txt file
+        logging.INFO(f'adding new urls')
+        with open(CONFIG["all_artists_urls_path"], 'w') as f:
+            f.write('# here I want to have ALL genius url that have been scraped (polish or not) \n')
             for url in urls_set:
                 f.write(url + '/n')
 

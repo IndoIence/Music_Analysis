@@ -1,9 +1,10 @@
-all_artists_urls_path : scraped_data/Genius/all_artists_urls.txt
+all_artists_urls_path : utils/all_urls.txt
 artists_pl_path : scraped_data/artists_pl
 artists_non_pl_path : scraped_data/artists_not_pl
 generated_data_path : generated_data
-wsd_outputs : generated_data/wsd_outputs
+wsd_outputs : generated_data/wsd_outputs_fixed
 websty_path : generated_data/websty
+stopwords : utils/stopwords.txt
 Logging:
  wsd: logs/wsd.log
 
@@ -13,7 +14,6 @@ Genius_scraping :
   save_small_artists: True
   verbose : False
   save_path: scraped_data/Genius
-  GENIUS_URLS_PATH: scraped_data/all_urls.txt
   GENIUS_CLIENT_ID : '803nTbhBGvR5Bv2pqnSRGr6NyLxD8YV4YhlB2rbqgd1k5SZp5Z5DPCTgCrQ7qwh7'
   GENIUS_CLIENT_SECRET : 'c5CFz-SRZbqyWFF_zOeCq88UdNeUMQdiKpzG1BGYZkd95rb8PGUZAp2xyN94sexcHKUOYVdbLtOl6TlMOdK9YA'
   GENIUS_BEARER : '6G95_WJrA_dY6h0D7JRGiE-vvvuU3L1rcltJihJQWL6TgbLokLbLUJ-4ihimBJfV'
@@ -31,4 +31,39 @@ LOGFILE_LASTFM : 'lastfm.log'
 
 LAST_FM_FEATURES : False
 
+artist_names : 
+# - Tede
+# - O.S.T.R.
+# - Pikers
+# - Vkie
+# - Kartky
+- Peja
+# - Slums Attack
+# - Dudek P56
+# - Young Igi
+# - donGURALesko
+# - Filipek
+# - Zeus (POL)
+# - Ten Typ Mes
+# # - Piekielny
+- KęKę
+# - Kukon
+# - VNM
+# - Kaz Bałagane
+# - Paluch
+# - PRO8L3M
+# - Białas
+# - Sarius
+# - Zeamsone
+# - Dwa Sławy
+# - KaeN
+# # - Klarenz
+# - LSO
+# - ReTo
+# - Pięć Dwa
+# - Te-Tris
 
+Small:
+- Vkie
+- Piekielny
+- Klarenz
