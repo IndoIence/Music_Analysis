@@ -1,3 +1,4 @@
+# here I want to have ALL genius url that have been scraped (polish or not) 
 https://genius.com/artists/003
 https://genius.com/artists/101-decybeli
 https://genius.com/artists/10k-projects
@@ -46,6 +47,7 @@ https://genius.com/artists/Abidaz
 https://genius.com/artists/Abradab
 https://genius.com/artists/Abstrakt
 https://genius.com/artists/Absztrakkt-and-cr7z
+https://genius.com/artists/Adax
 https://genius.com/artists/Adhd
 https://genius.com/artists/Adi-nowak
 https://genius.com/artists/Adma
@@ -102,6 +104,7 @@ https://genius.com/artists/Av-mozano
 https://genius.com/artists/Avi-x-louis-villain
 https://genius.com/artists/Azizi-hustlaz-el-cookizo-i-vszupeuen
 https://genius.com/artists/Azja
+https://genius.com/artists/B0b3rt
 https://genius.com/artists/B10
 https://genius.com/artists/B7
 https://genius.com/artists/Baby-gho-t
@@ -117,6 +120,7 @@ https://genius.com/artists/Banita
 https://genius.com/artists/Bartas
 https://genius.com/artists/Bartek-and-mia
 https://genius.com/artists/Barto-katt
+https://genius.com/artists/Bartosz-kapustka
 https://genius.com/artists/Bas-tajpan
 https://genius.com/artists/Bassirou
 https://genius.com/artists/Bastille
@@ -133,6 +137,7 @@ https://genius.com/artists/Bejf
 https://genius.com/artists/Beka-ksh
 https://genius.com/artists/Bekit-policjnych-lamp
 https://genius.com/artists/Bekon
+https://genius.com/artists/Belly
 https://genius.com/artists/Belmondo
 https://genius.com/artists/Benncart
 https://genius.com/artists/Bentas
@@ -289,6 +294,7 @@ https://genius.com/artists/Da-poet
 https://genius.com/artists/Dabl-blast
 https://genius.com/artists/Daniel-drumz
 https://genius.com/artists/Datpiffmafia
+https://genius.com/artists/Dave
 https://genius.com/artists/Dawider
 https://genius.com/artists/Daya-luz
 https://genius.com/artists/Dd-osama
@@ -309,6 +315,7 @@ https://genius.com/artists/Deluks
 https://genius.com/artists/Dem6n6l6gy-187
 https://genius.com/artists/Demonology-hifi
 https://genius.com/artists/Dene-gutek
+https://genius.com/artists/Denzel-curry
 https://genius.com/artists/Deobe-dena
 https://genius.com/artists/Deobson
 https://genius.com/artists/Deposito-zero-studios
@@ -593,6 +600,7 @@ https://genius.com/artists/Gruby-mielzky
 https://genius.com/artists/Grupa-kot
 https://genius.com/artists/Grupa-operacyjna
 https://genius.com/artists/Gruzin
+https://genius.com/artists/Gugas
 https://genius.com/artists/Guli-x-homex
 https://genius.com/artists/Guova
 https://genius.com/artists/Guzior
@@ -652,6 +660,7 @@ https://genius.com/artists/Intoksynator
 https://genius.com/artists/Irusu
 https://genius.com/artists/Islim
 https://genius.com/artists/Ivy-queen
+https://genius.com/artists/Iza-lach
 https://genius.com/artists/Jacques-anthony
 https://genius.com/artists/Jacus
 https://genius.com/artists/Jaga-pol
@@ -706,6 +715,7 @@ https://genius.com/artists/Jotes
 https://genius.com/artists/Joteste
 https://genius.com/artists/Joyner-lucas
 https://genius.com/artists/Jozo
+https://genius.com/artists/Js-ftyann
 https://genius.com/artists/Jsk
 https://genius.com/artists/Juanse-laverde
 https://genius.com/artists/Juda-jmar
@@ -771,6 +781,7 @@ https://genius.com/artists/Kdfromthe5
 https://genius.com/artists/Keala-settle-and-the-greatest-showman-ensemble
 https://genius.com/artists/Kedyf
 https://genius.com/artists/Keke
+https://genius.com/artists/Kemoi
 https://genius.com/artists/Ken-carson
 https://genius.com/artists/Kendrick-lamar
 https://genius.com/artists/Kerza
@@ -808,6 +819,7 @@ https://genius.com/artists/Kobya
 https://genius.com/artists/Kocur
 https://genius.com/artists/Kocz
 https://genius.com/artists/Koczurek-sekcja-garaz
+https://genius.com/artists/Kodak-black
 https://genius.com/artists/Kokane
 https://genius.com/artists/Koligacja-gieka
 https://genius.com/artists/Koncept
@@ -872,6 +884,7 @@ https://genius.com/artists/Le-youngin
 https://genius.com/artists/Leadwash
 https://genius.com/artists/Legendarny-afrojax
 https://genius.com/artists/Lelon-stg
+https://genius.com/artists/Lendo
 https://genius.com/artists/Leonraz
 https://genius.com/artists/Lerek
 https://genius.com/artists/Leroy-kang-ryan-henderson
@@ -922,6 +935,7 @@ https://genius.com/artists/Luxus-leverpostei
 https://genius.com/artists/Lv-south-central-cartel
 https://genius.com/artists/Lvpvs
 https://genius.com/artists/Lwc
+https://genius.com/artists/Lx
 https://genius.com/artists/Lyfe-jennings
 https://genius.com/artists/Lyutik
 https://genius.com/artists/Maach-and-rufuz
@@ -949,6 +963,7 @@ https://genius.com/artists/Manuellsen
 https://genius.com/artists/Maolat
 https://genius.com/artists/Maolat-and-ajron
 https://genius.com/artists/Mapa
+https://genius.com/artists/Marcinmusic
 https://genius.com/artists/Mardi-gras
 https://genius.com/artists/Maris-racal
 https://genius.com/artists/Mark-luva
@@ -968,6 +983,7 @@ https://genius.com/artists/Mazie
 https://genius.com/artists/Mc-copinho
 https://genius.com/artists/Mc-gorynych
 https://genius.com/artists/Mc-lucjan
+https://genius.com/artists/Mc-pedrinho
 https://genius.com/artists/Mc-pequeno-diamante
 https://genius.com/artists/Mc-silk
 https://genius.com/artists/Mcmikey
@@ -1099,6 +1115,7 @@ https://genius.com/artists/Non-koneksja
 https://genius.com/artists/Noon-dj-twister
 https://genius.com/artists/Norbi
 https://genius.com/artists/Normano
+https://genius.com/artists/Norny
 https://genius.com/artists/Novelist
 https://genius.com/artists/Nowator
 https://genius.com/artists/Nps
@@ -1198,6 +1215,7 @@ https://genius.com/artists/Peter-koelewijn
 https://genius.com/artists/Pewex
 https://genius.com/artists/Pewna-pozycja
 https://genius.com/artists/Pewuery
+https://genius.com/artists/Pezet
 https://genius.com/artists/Pezet-and-maolat
 https://genius.com/artists/Pezet-noon
 https://genius.com/artists/Pezet-x-jimek
@@ -1222,6 +1240,7 @@ https://genius.com/artists/Piotr-rogucki
 https://genius.com/artists/Pj-harvey-and-harry-escott
 https://genius.com/artists/Pjk-eastny
 https://genius.com/artists/Pjus
+https://genius.com/artists/Pl
 https://genius.com/artists/Planbe
 https://genius.com/artists/Planet-anm
 https://genius.com/artists/Plejer
@@ -1312,6 +1331,7 @@ https://genius.com/artists/Rakraczej
 https://genius.com/artists/Randy-newman
 https://genius.com/artists/Rap-addix
 https://genius.com/artists/Rap-addix-junes-soulpete
+https://genius.com/artists/Rap-genius
 https://genius.com/artists/Rapa-nui
 https://genius.com/artists/Raperaj
 https://genius.com/artists/Rapfanatic
@@ -1346,6 +1366,7 @@ https://genius.com/artists/Rip-wytepreme
 https://genius.com/artists/Riuka
 https://genius.com/artists/Rizi-beizeti
 https://genius.com/artists/Rmand
+https://genius.com/artists/Rob-mazurek
 https://genius.com/artists/Robert-cichy
 https://genius.com/artists/Rodelheim-hartreim-projekt
 https://genius.com/artists/Rogal-ddl
@@ -1372,12 +1393,14 @@ https://genius.com/artists/Sabina-ddumba
 https://genius.com/artists/Sadcrush
 https://genius.com/artists/Saful-dixon37
 https://genius.com/artists/Sage-the-gemini
+https://genius.com/artists/Sahara
 https://genius.com/artists/Saieen-zahoor
 https://genius.com/artists/Sanhedryn
 https://genius.com/artists/Sanik
 https://genius.com/artists/Santez
 https://genius.com/artists/Sarius
 https://genius.com/artists/Sarius-x-voskovy-x-wena
+https://genius.com/artists/Savo
 https://genius.com/artists/Sawndir
 https://genius.com/artists/Sb-maffija
 https://genius.com/artists/Sbm-label
@@ -1386,6 +1409,7 @@ https://genius.com/artists/Scarlxrd
 https://genius.com/artists/Schafter
 https://genius.com/artists/Seismic808
 https://genius.com/artists/Selwa
+https://genius.com/artists/Semi
 https://genius.com/artists/Shamsutdinov-artur-airatovich
 https://genius.com/artists/Shellerini
 https://genius.com/artists/Shibayanrecords
@@ -1522,6 +1546,7 @@ https://genius.com/artists/Thabo
 https://genius.com/artists/Thara-bhai-joginder
 https://genius.com/artists/The-aces
 https://genius.com/artists/The-baku-series
+https://genius.com/artists/The-black-heart-procession
 https://genius.com/artists/The-brothers-macklovitch-and-a-trak
 https://genius.com/artists/The-defenders
 https://genius.com/artists/The-flintstones
@@ -1551,6 +1576,7 @@ https://genius.com/artists/Toczek
 https://genius.com/artists/Tokyos-revenge
 https://genius.com/artists/Tomasina
 https://genius.com/artists/Tomasz-andersen
+https://genius.com/artists/Tomczytom
 https://genius.com/artists/Tomiko
 https://genius.com/artists/Tony-jazzu
 https://genius.com/artists/Torcida-split
@@ -1619,6 +1645,7 @@ https://genius.com/artists/Waco
 https://genius.com/artists/Waglewski-fisz-emade
 https://genius.com/artists/Waglewskiemadefisz
 https://genius.com/artists/Waldemar-kasta
+https://genius.com/artists/Wale
 https://genius.com/artists/Wang-yitai
 https://genius.com/artists/Warga
 https://genius.com/artists/Warmi
@@ -1682,6 +1709,7 @@ https://genius.com/artists/Wywra
 https://genius.com/artists/Wzgorze-ya-pa-3
 https://genius.com/artists/Wzs
 https://genius.com/artists/Xhelazz
+https://genius.com/artists/Xxxtentacion
 https://genius.com/artists/Yanuari
 https://genius.com/artists/Yappe
 https://genius.com/artists/Yaro
