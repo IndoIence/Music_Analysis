@@ -5,7 +5,8 @@ class MySong(Song):
         self.__dict__ = song.__dict__
         self.language = None
 
-    def clean_song_text(self, lower=False):
+    @property
+    def clean_song_lyrics(self, lower=False):
         # find the first occurance of the word "Lyrics", and discard what's before that
         lyrics_start = self.lyrics.find('Lyrics') + len('Lyrics')
         lyrics_cleaned = self.lyrics[lyrics_start:]
@@ -17,8 +18,8 @@ class MySong(Song):
             lyrics_cleaned = lyrics_cleaned[:-5]
         pattern = '^\s*\d+\s*$'
         lyrics_cleaned = re.sub(pattern, '', lyrics_cleaned)
-        # clean some bullshit
-        lyrics_cleaned = re.sub(r'You might also like\[', '[',  lyrics_cleaned)
+        # clean english contaminated phrases from genius
+        lyrics_cleaned = re.sub(r'You might also like', '',  lyrics_cleaned)
         # should ignore anything in the square brackets
         lyrics_cleaned = clean_brackets(lyrics_cleaned)
         return lyrics_cleaned
