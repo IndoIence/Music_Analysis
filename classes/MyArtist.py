@@ -1,6 +1,6 @@
 from lyricsgenius.genius import Artist, Song
 from classes.MySong import MySong
-
+from pathlib import Path
 from nltk import word_tokenize
 # i don't know if scpacy_fastlang is actually needed
 
@@ -22,6 +22,9 @@ class MyArtist(Artist):
         self.language: str = self.songs_languages[0][0]
         self.lyrics_len: int = self.get_lyrics_len()
         # self.nlp_doc = sel    out = ''f._get_nlp_docs(nlp)
+    @property
+    def name_sanitized(self) -> str:
+        return  self.name.replace(' ', '_').replace(".", "_").replace('/', ' ').replace('?', ' ').strip()
 
     def get_songs_languages(self):
         nlp = self._init_nlp()
@@ -59,9 +62,11 @@ class MyArtist(Artist):
                 output.append(MySong(song))
         return output
     
-    def get_limit_songs(self, limit:int=35000, prim_art: bool=False, only_art:bool=False) -> list[Song]:
-        # returns list of songs up to the limit of words
+    def get_limit_songs(self, limit:int=None, prim_art: bool=False, only_art:bool=False) -> list[Song]:
+        # returns list of songs just over the limit of words
         # the words are counted ater cleaning
+        if not limit:
+            limit = float('inf')
         count = 0
         result = []
         for song in self.songs:
@@ -71,14 +76,28 @@ class MyArtist(Artist):
                 continue
             if prim_art and not song._body["primary_artist"]["id"] == self.id:
                 continue 
-            song_text_cleaned = song.clean_song_text()
+            song_text_cleaned = song.clean_song_lyrics()
             words = word_tokenize(song_text_cleaned)
             count += len(words)
             result.append(song)
             if count >= limit:
                 return result
         return result
-        raise ValueError(f"Artist {self.name} doesn't have {limit} words in avialable songs")
     #this should rather be in the song i think
-    def count_words(self, text: str):
+    def count_words(self, text: str) -> int:
         return len(word_tokenize(text))
+    
+    def save_lyrics(self, save_path: Path = Path(''), filename=None, extension='txt'):
+            """
+            Overwrites the lyricsgenius.artist.save_lyrics().
+            Gives sanitized lyrics without brackets and genius unwanted additions
+            """
+            if not filename:
+                filename = self.name_sanitized
+            filename += '.' + extension
+            with open(save_path / filename, 'w') as f:
+                for i,song in enumerate(self.songs):
+                    f.write(str(i+1)+'. '+song.title)
+                    f.write('\n\n')
+                    f.write(song.clean_song_lyrics)
+                    f.write('\n\n')
