@@ -1,5 +1,6 @@
 from transformers import pipeline
 import os
+import pickle
 import faiss
 import datasets
 import json
@@ -37,14 +38,15 @@ def load_index(index_name: str = "clarin-knext/wsd-linking-index"):
     faiss_index = faiss.read_index("./encoder.faissindex", faiss.IO_FLAG_MMAP)
     return index_data, faiss_index
 
-def predict(index, text: str = sample_text, top_k: int=3):
+def predict(index, text: str = sample_text, top_k: int=3, raw=True):
     index_data, faiss_index = index
     # takes only the [CLS] embedding (for now)
     query = model(text, return_tensors='pt')[0][0].numpy().reshape(1, -1)
 
     scores, indices = faiss_index.search(query, top_k)
     scores, indices = scores.tolist(), indices.tolist()
-
+    if raw:
+        return scores, indices
     results = "\n".join([
         f"{index_data[result[0]]}: {result[1]}"
         for output in zip(indices, scores)
@@ -64,7 +66,9 @@ def input_from_doc(doc, window=100):
                 yield token.text, start + middle + end
 
 if __name__ == "__main__":
-    dir_name = CONFIG["wsd_outputs"]
+    out_dir = CONFIG["wsd_outputs"]
+    in_dir = Path(CONFIG['artists_pl_path'])
+    artist_names = CONFIG["artist_names"]
     model = load_model()
     # loading to gpu
     index_data, index = load_index()
@@ -73,21 +77,39 @@ if __name__ == "__main__":
     gpu_index = faiss.index_cpu_to_gpu(res, gpu_nr, index)
     index = (index_data, gpu_index)
     # actual search
-    artists = get_100_biggest()
-    for artist in tqdm(artists):
+
+    for a_name in artist_names:
+        f_name = sanitize_art_name(a_name)
+        with open(in_dir / (f_name + '.artPkl'), 'rb') as f:
+            artist = pickle.load(f)
         logging.info(f"Start wsd for : {artist.name}")
         f_name = sanitize_art_name(artist.name) + '.jsonl'
-        with open(Path(dir_name) / f_name, 'w') as f:
-            for song in tqdm(artist.songs):
+        with open(Path(out_dir) / f_name, 'w') as f:
+            for song in tqdm(artist.get_limit_songs(5000, only_art=True)):
                 doc = nlp(song.lyrics)
                 d = {"name": song.title,
                      "text": song.lyrics,
                      "wsd": []}
                 for word, i in tqdm(input_from_doc(doc)):
-                    out = predict(index, i)
-                    d["wsd"].append((word, out))
+                    scores, indices = predict(index, i)
+                    suggestions = {}
+                    for lists in zip(scores, indices):
+                        for s,i in zip(*lists):
+                            plwn_id, sense_def = index_data[i]
+                            sense, definition = sense_def
+                            suggestions[plwn_id]: {
+                                "sense": s,
+                                "definition": definition,
+                                "score": i,
+                            }
+                    d["wsd"].append({"word":word, "suggestions": suggestions})
             try:
                 json.dump(d, f, ensure_ascii=False)
                 f.write('\n')
             except:
                 logging.error(f"Saving to file failed for : {artist.name}")
+
+
+"""
+
+"""
