@@ -21,11 +21,6 @@ def get_artists(path: Path = Path(CONFIG["artists_pl_path"]) ):
         art = get_artist(art_path, path)
         yield art
 
-def get_all_lyrics(art):
-    if not art.songs:
-        yield ''
-    yield '\n'.join((song.lyrics for song in art.songs))
-
 def get_all_urls():
     genius_path = Path(CONFIG["Genius_scraping"]["save_path"])
     urls = []
@@ -47,11 +42,6 @@ def all_artists_genius(genius_path:Path=Path(CONFIG["Genius_scraping"]["save_pat
         artist_path = genius_path / art_file
         a = MyArtist(pickle.load(open(artist_path, 'rb')))
         yield a     
-
-
-def clean_brackets(text):
-    pattern = r'\[.*?\]'
-    return re.sub(pattern, '', text)
 
 def load_jsonl(p:Path):
     with open(p, 'r') as f:
