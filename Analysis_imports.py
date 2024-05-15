@@ -55,6 +55,7 @@ def scrape_artists_songs(artist_list: list[str]):
         # save to specific pl / non pl directories
         if my_artist.language == "pl":
             out_path2 = Path(CONFIG['artists_pl_path'])
+            my_artist.save_lyrics(CONFIG['korpusomat_path'])
         else:
             out_path2 = Path(CONFIG['artists_non_pl_path'])
         file_name = sanitize_art_name(my_artist.name)
