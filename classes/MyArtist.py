@@ -76,8 +76,7 @@ class MyArtist(Artist):
                 continue
             if prim_art and not song._body["primary_artist"]["id"] == self.id:
                 continue 
-            song_text_cleaned = song.clean_song_lyrics()
-            words = word_tokenize(song_text_cleaned)
+            words = word_tokenize(song.clean_song_lyrics)
             count += len(words)
             result.append(song)
             if count >= limit:
