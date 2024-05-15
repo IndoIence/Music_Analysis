@@ -7,6 +7,7 @@ import json
 from tqdm import tqdm
 from pathlib import Path
 import spacy
+from spacy.tokens import Doc
 import logging
 from utils import get_100_biggest, get_artists, CONFIG, sanitize_art_name
 
@@ -17,7 +18,7 @@ logging.basicConfig(
 )
 
 
-nlp = spacy.load("pl_core_news_lg")
+nlp = spacy.load("pl_core_news_sm")
 auth_token: str = os.environ.get("CLARIN_KNEXT")
 
 sample_text = (
@@ -54,7 +55,11 @@ def predict(index, text: str = sample_text, top_k: int=3, raw=True):
     ])
     return results
 
-def input_from_doc(doc, window=100):
+def input_from_doc(doc: Doc , window=100):
+    """
+    Input: doc -> a spacy doc because i need to have a consistent approach
+    for the brackets in wsd
+    """
     for sent in doc.sents:
         for token in sent:
             if token.is_alpha and not token.is_punct and not token.is_bracket:
@@ -68,7 +73,7 @@ def input_from_doc(doc, window=100):
 if __name__ == "__main__":
     out_dir = CONFIG["wsd_outputs"]
     in_dir = Path(CONFIG['artists_pl_path'])
-    artist_names = CONFIG["artist_names"]
+    artist_names = CONFIG["artists_for_wsd"]
     model = load_model()
     # loading to gpu
     index_data, index = load_index()
