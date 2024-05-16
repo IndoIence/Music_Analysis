@@ -1,11 +1,21 @@
-notebooks/LastFM_scraping.ipynb
-notebooks/First_Genius_Scrape.ipynb
-config.py
+__pycache__
+#directories
 /scraped_data/*
 !/scraped_data/utils
 /logs
 /output_data
-notebook.ipynb
-__pycache__
-default_model
 /generated_data
+
+# files
+TODO.md
+
+default_model
+
+delete.py
+
+notebook.ipynb
+notebooks/LastFM_scraping.ipynb
+notebooks/First_Genius_Scrape.ipynb
+
+# extensions
+*.pkl
