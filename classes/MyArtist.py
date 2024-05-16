@@ -62,9 +62,12 @@ class MyArtist(Artist):
                 output.append(MySong(song))
         return output
     
-    def get_limit_songs(self, limit:int=None, prim_art: bool=False, only_art:bool=False) -> list[Song]:
-        # returns list of songs just over the limit of words
-        # the words are counted ater cleaning
+    def get_limit_songs(self, limit:int=None, prim_art: bool=False, only_art:bool=False) -> list[MySong]:
+        """
+        returns list of songs with the limit of words 
+        (always finishes the song, so can go over)
+        the words are counted ater cleaning the song text from genius bullshit
+        """
         if not limit:
             limit = float('inf')
         count = 0
