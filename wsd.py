@@ -9,7 +9,10 @@ from pathlib import Path
 import spacy
 from spacy.tokens import Doc
 import logging
-from utils import get_100_biggest, get_artists, CONFIG, sanitize_art_name
+import typing
+if typing.TYPE_CHECKING:
+    from classes.MyArtist import MyArtist
+from utils import CONFIG, sanitize_art_name
 
 logging.basicConfig(
     filename=CONFIG["Logging"]['wsd'],
@@ -55,6 +58,19 @@ def predict(index, text: str = sample_text, top_k: int=3, raw=True):
     ])
     return results
 
+def dry_run():
+    """
+    need to initiate the model globally or in main like: 
+    model = load_model()
+    """
+    index_data, index = load_index()
+    gpu_nr = 0
+    res= faiss.StandardGpuResources()
+    gpu_index = faiss.index_cpu_to_gpu(res, gpu_nr, index)
+    index = (index_data, gpu_index)
+    predictions = predict(index, sample_text, raw=False)
+    print(predictions)
+
 def input_from_doc(doc: Doc , window=100):
     """
     Input: doc -> a spacy doc because i need to have a consistent approach
@@ -62,18 +78,40 @@ def input_from_doc(doc: Doc , window=100):
     """
     for sent in doc.sents:
         for token in sent:
-            if token.is_alpha and not token.is_punct and not token.is_bracket:
-                # put the [unused0] and [unused1] around the word
-                middle = f"[unused0] {token.text} [unused1]"
-                start_ind = max(0, token.idx-window)
-                start = doc.text[start_ind:token.idx]
-                end = doc.text[token.idx+len(token.text):token.idx+len(token.text)+window]
-                yield token.text, start + middle + end
+            if token.is_punct or token.is_bracket or token.is_stop:
+                continue
+            # put the [unused0] and [unused1] around the word
+            middle = f"[unused0] {token.text} [unused1]"
+            start_ind = max(0, token.idx-window)
+            start = doc.text[start_ind:token.idx]
+            end = doc.text[token.idx+len(token.text):token.idx+len(token.text)+window]
+            yield token.text, start + middle + end
+
+def load_artists():
+    in_dir = Path(CONFIG['artists_pl_path'])
+    artist_names = CONFIG['wsd']["artists"]
+    for a_name in artist_names:
+        f_name = sanitize_art_name(a_name)
+        with open(in_dir / (f_name + '.artPkl'), 'rb') as f:
+            artist: MyArtist = pickle.load(f)
+        yield artist 
+# TODO: shouldn't the get_limit_songs be given with cleaned song text without the genius bullshit?
 
 if __name__ == "__main__":
-    out_dir = CONFIG["wsd_outputs"]
-    in_dir = Path(CONFIG['artists_pl_path'])
-    artist_names = CONFIG["artists_for_wsd"]
+    """
+    in CONFIG file:
+        list of artists
+        word limit for artist
+    for every artist get songs (set the limit for words)
+    for every song make a spacy doc
+    for every doc get get tokens
+    for every token get the context around it
+    pass that context to make a prediction
+    save all predictions from a song to a dictionary
+    save that dict to a jsonl file
+    """
+    word_limit = CONFIG['wsd']['word_limit']
+    out_dir = CONFIG["wsd"]["outputs"]
     model = load_model()
     # loading to gpu
     index_data, index = load_index()
@@ -81,38 +119,41 @@ if __name__ == "__main__":
     res= faiss.StandardGpuResources()
     gpu_index = faiss.index_cpu_to_gpu(res, gpu_nr, index)
     index = (index_data, gpu_index)
-    # actual search
-
-    for a_name in artist_names:
-        f_name = sanitize_art_name(a_name)
-        with open(in_dir / (f_name + '.artPkl'), 'rb') as f:
-            artist = pickle.load(f)
+    
+    for artist in load_artists():
         logging.info(f"Start wsd for : {artist.name}")
-        f_name = sanitize_art_name(artist.name) + '.jsonl'
-        with open(Path(out_dir) / f_name, 'w') as f:
-            for song in tqdm(artist.get_limit_songs(5000, only_art=True)):
-                doc = nlp(song.lyrics)
-                d = {"name": song.title,
-                     "text": song.lyrics,
-                     "wsd": []}
-                for word, i in tqdm(input_from_doc(doc)):
-                    scores, indices = predict(index, i)
-                    suggestions = {}
-                    for lists in zip(scores, indices):
-                        for s,i in zip(*lists):
-                            plwn_id, sense_def = index_data[i]
-                            sense, definition = sense_def
-                            suggestions[plwn_id]: {
-                                "sense": s,
-                                "definition": definition,
-                                "score": i,
-                            }
-                    d["wsd"].append({"word":word, "suggestions": suggestions})
-            try:
-                json.dump(d, f, ensure_ascii=False)
-                f.write('\n')
-            except:
-                logging.error(f"Saving to file failed for : {artist.name}")
+        out_fname = sanitize_art_name(artist.name) + '.jsonl' 
+        limit_songs = artist.get_limit_songs(word_limit, only_art=True)
+
+        for song in tqdm(limit_songs):
+            doc = nlp(song.clean_song_lyrics)
+            song_dict = {
+                "name": song.title,
+                "text": song.lyrics,
+                "wsd": [],
+                }
+            
+            for word, context in tqdm(input_from_doc(doc)):
+                scores, indices = predict(index, context)
+                suggestions = {}
+                # transform 2d lists (scores, indices) to human readable outputs
+                for lists in zip(scores, indices):
+                    for score,cur_ind in zip(*lists):
+                        plwn_id, sense_def = index_data[cur_ind]
+                        sense, definition = sense_def
+                        suggestions[plwn_id] = {
+                            "sense": sense,
+                            "definition": definition,
+                            "score": score,
+                        }
+                song_dict["wsd"].append({"word":word, "suggestions": suggestions})
+                print(song_dict["wsd"])
+            with open(Path(out_dir) / out_fname, 'w') as f:
+                try:
+                    json.dump(song_dict, f, ensure_ascii=False)
+                    f.write('\n')
+                except:
+                    logging.error(f"Saving to file failed for : {artist.name}")
 
 
 """
