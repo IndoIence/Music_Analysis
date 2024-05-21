@@ -8,70 +8,57 @@ from tqdm import tqdm
 from pathlib import Path
 import spacy
 from spacy.tokens import Doc
+
 import logging
 import typing
+
 if typing.TYPE_CHECKING:
     from classes.MyArtist import MyArtist
-from utils import CONFIG, sanitize_art_name
+from utils import CONFIG, sanitize_art_name, get_artists
 
 logging.basicConfig(
-    filename=CONFIG["Logging"]['wsd'],
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
+    filename=CONFIG["Logging"]["wsd"], level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 
 nlp = spacy.load("pl_core_news_sm")
-auth_token: str = os.environ.get("CLARIN_KNEXT")
+auth_token: str | None = os.environ.get("CLARIN_KNEXT")
 
 sample_text = (
     "Imiona zmieniać można, numery też, ale fakt to fakt"
     "Tańczą przy nas szprychy, wiesz? Super ekstra [unused0] szprychy [unused1]"
-    "Możesz marzyć o takich dziewczynach - ciebie nie może być przy tym")
+    "Możesz marzyć o takich dziewczynach - ciebie nie może być przy tym"
+)
+
 
 def load_model(model_name: str = "clarin-knext/wsd-encoder"):
     model = pipeline("feature-extraction", model=model_name, use_auth_token=auth_token)
     return model
 
+
 def load_index(index_name: str = "clarin-knext/wsd-linking-index"):
-    ds = datasets.load_dataset(index_name, use_auth_token=auth_token)['train']
-    index_data = {
-        idx: (e_id, e_text) for idx, (e_id, e_text) in
-        enumerate(zip(ds['entities'], ds['texts']))
-    }
+    ds = datasets.load_dataset(index_name, use_auth_token=auth_token)["train"]
+    index_data = {idx: (e_id, e_text) for idx, (e_id, e_text) in enumerate(zip(ds["entities"], ds["texts"]))}
     faiss_index = faiss.read_index("./encoder.faissindex", faiss.IO_FLAG_MMAP)
     return index_data, faiss_index
 
-def predict(index, text: str = sample_text, top_k: int=3, raw=True):
+
+def predict(index, text: str = sample_text, top_k: int = 3, raw=True):
     index_data, faiss_index = index
     # takes only the [CLS] embedding (for now)
-    query = model(text, return_tensors='pt')[0][0].numpy().reshape(1, -1)
+    query = model(text, return_tensors="pt")[0][0].numpy().reshape(1, -1)
 
     scores, indices = faiss_index.search(query, top_k)
     scores, indices = scores.tolist(), indices.tolist()
     if raw:
         return scores, indices
-    results = "\n".join([
-        f"{index_data[result[0]]}: {result[1]}"
-        for output in zip(indices, scores)
-        for result in zip(*output)
-    ])
+    results = "\n".join(
+        [f"{index_data[result[0]]}: {result[1]}" for output in zip(indices, scores) for result in zip(*output)]
+    )
     return results
 
-def dry_run():
-    """
-    need to initiate the model globally or in main like: 
-    model = load_model()
-    """
-    index_data, index = load_index()
-    gpu_nr = 0
-    res= faiss.StandardGpuResources()
-    gpu_index = faiss.index_cpu_to_gpu(res, gpu_nr, index)
-    index = (index_data, gpu_index)
-    predictions = predict(index, sample_text, raw=False)
-    print(predictions)
 
-def input_from_doc(doc: Doc , window=100):
+def input_from_doc(doc: Doc, window=100):
     """
     Input: doc -> a spacy doc because i need to have a consistent approach
     for the brackets in wsd
@@ -82,20 +69,11 @@ def input_from_doc(doc: Doc , window=100):
                 continue
             # put the [unused0] and [unused1] around the word
             middle = f"[unused0] {token.text} [unused1]"
-            start_ind = max(0, token.idx-window)
-            start = doc.text[start_ind:token.idx]
-            end = doc.text[token.idx+len(token.text):token.idx+len(token.text)+window]
+            start_ind = max(0, token.idx - window)
+            start = doc.text[start_ind : token.idx]
+            end = doc.text[token.idx + len(token.text) : token.idx + len(token.text) + window]
             yield token.text, start + middle + end
 
-def load_artists():
-    in_dir = Path(CONFIG['artists_pl_path'])
-    artist_names = CONFIG['wsd']["artists"]
-    for a_name in artist_names:
-        f_name = sanitize_art_name(a_name)
-        with open(in_dir / (f_name + '.artPkl'), 'rb') as f:
-            artist: MyArtist = pickle.load(f)
-        yield artist 
-# TODO: shouldn't the get_limit_songs be given with cleaned song text without the genius bullshit?
 
 if __name__ == "__main__":
     """
@@ -110,35 +88,37 @@ if __name__ == "__main__":
     save all predictions from a song to a dictionary
     save that dict to a jsonl file
     """
-    word_limit = CONFIG['wsd']['word_limit']
+    word_limit = CONFIG["wsd"]["word_limit"]
     out_dir = CONFIG["wsd"]["outputs"]
     model = load_model()
     # loading to gpu
     index_data, index = load_index()
     gpu_nr = 0
-    res= faiss.StandardGpuResources()
+    res = faiss.StandardGpuResources()
     gpu_index = faiss.index_cpu_to_gpu(res, gpu_nr, index)
     index = (index_data, gpu_index)
-    
-    for artist in load_artists():
+
+    for artist in get_artists(CONFIG["wsd"]["artists"]):
         logging.info(f"Start wsd for : {artist.name}")
-        out_fname = sanitize_art_name(artist.name) + '.jsonl' 
+        out_fname = sanitize_art_name(artist.name) + ".jsonl"
+        # clear the file first before writing to it
+        open(Path(out_dir) / out_fname, "w")
         limit_songs = artist.get_limit_songs(word_limit, only_art=True)
 
-        for song in tqdm(limit_songs):
+        for song in tqdm(limit_songs, f"{artist.name} songs"):
             doc = nlp(song.clean_song_lyrics)
             song_dict = {
                 "name": song.title,
                 "text": song.lyrics,
                 "wsd": [],
-                }
-            
-            for word, context in tqdm(input_from_doc(doc)):
+            }
+
+            for word, context in tqdm(input_from_doc(doc), song.title):
                 scores, indices = predict(index, context)
                 suggestions = {}
                 # transform 2d lists (scores, indices) to human readable outputs
                 for lists in zip(scores, indices):
-                    for score,cur_ind in zip(*lists):
+                    for score, cur_ind in zip(*lists):
                         plwn_id, sense_def = index_data[cur_ind]
                         sense, definition = sense_def
                         suggestions[plwn_id] = {
@@ -146,16 +126,10 @@ if __name__ == "__main__":
                             "definition": definition,
                             "score": score,
                         }
-                song_dict["wsd"].append({"word":word, "suggestions": suggestions})
-                print(song_dict["wsd"])
-            with open(Path(out_dir) / out_fname, 'w') as f:
+                song_dict["wsd"].append({"word": word, "suggestions": suggestions})
+            with open(Path(out_dir) / out_fname, "a") as f:
                 try:
                     json.dump(song_dict, f, ensure_ascii=False)
-                    f.write('\n')
+                    f.write("\n")
                 except:
                     logging.error(f"Saving to file failed for : {artist.name}")
-
-
-"""
-
-"""
