@@ -4,6 +4,7 @@ __pycache__
 !/scraped_data/utils
 /logs
 /output_data
+/plots
 /generated_data
 
 # files
