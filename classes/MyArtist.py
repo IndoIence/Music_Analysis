@@ -24,9 +24,9 @@ class MyArtist(Artist):
         self.songs = self._get_my_songs()
         self.songs_languages = self.get_songs_languages()
         self.language: str = self.songs_languages[0][0]
-        self._lyrics_len_only_art = self.lyrics_len_only_art
-        self._lyrics_len_all = self.lyrics_len_all
-        self._lyrics_len_prim_art = self.lyrics_len_prim_art
+        self._lyrics_len_only_art: int = self.lyrics_len_only_art
+        self._lyrics_len_all: int = self.lyrics_len_all
+        self._lyrics_len_prim_art: int = self.lyrics_len_prim_art
         # self.lyrics_len: int = self.lyrics_len
         # self.nlp_doc = sel    out = ''f._get_nlp_docs(nlp)
 
@@ -135,7 +135,7 @@ class MyArtist(Artist):
     def count_words(self, text: str) -> int:
         return len(word_tokenize(text))
 
-    def save_lyrics(self, save_path: Path = Path(""), filename="", extension="txt"):
+    def save_lyrics(self, save_path: Path = Path(""), filename="", extension="txt"):  # type: ignore
         """
         Overwrites the lyricsgenius.artist.save_lyrics().
         Gives sanitized lyrics without brackets and genius unwanted additions
