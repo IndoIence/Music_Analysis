@@ -1,2 +1,4 @@
 lyricsgenius~=3.0.1
 nltk~=3.5
+pre-commit
+types-PyYAML

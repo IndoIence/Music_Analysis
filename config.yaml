@@ -1,8 +1,10 @@
 all_artists_urls_path : utils/all_urls.txt
 artists_pl_path : scraped_data/artists_pl
+artists_pl_backup_path : scraped_data/artists_pl_backup_20_05/artists_pl_backup
 artists_non_pl_path : scraped_data/artists_not_pl
-generated_data_path : generated_data
-
+generated_data_path : generated_data/
+vocab_path : generated_data/vocab/
+plots_path : plots
 websty_path : generated_data/websty
 korpusomat_path: scraped_data/korpusomat
 korpusomat_small_path: scraped_data/korpusomat_small
@@ -46,7 +48,7 @@ wsd:
   # - Magiera
   # - Paluch
   # - Popek
-  - Pezet
+  # # - Pezet
   # - Quebonafide
   # - Sarius
   # - Sokół_(POL)
@@ -58,8 +60,6 @@ wsd:
   # - Żabson
 
 artist_names : 
-# - Klarenz
-# - Piekielny
 - Białas
 - donGURALesko
 - Dudek P56
@@ -124,6 +124,7 @@ top30:
 
 
 Small:
+- ksiaze700
 - Vkie
 - Piekielny
 - Klarenz
