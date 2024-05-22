@@ -1,5 +1,6 @@
-__pycache__
 #directories
+
+__pycache__
 /scraped_data/*
 !/scraped_data/utils
 /logs
@@ -7,16 +8,16 @@ __pycache__
 /plots
 /generated_data
 /typings
+/notebooks/
 # files
+
 TODO.md
-
 default_model
-
 delete.py
-
 notebook.ipynb
-notebooks/LastFM_scraping.ipynb
-notebooks/First_Genius_Scrape.ipynb
+
+# notebooks/LastFM_scraping.ipynb
+# notebooks/First_Genius_Scrape.ipynb
 
 # extensions
 *.pkl
