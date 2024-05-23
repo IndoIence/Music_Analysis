@@ -14,7 +14,7 @@ import typing
 
 if typing.TYPE_CHECKING:
     from classes.MyArtist import MyArtist
-from utils import CONFIG, sanitize_art_name, get_artists
+from utils import CONFIG, sanitize_art_name, get_all_artists
 
 logging.basicConfig(
     filename=CONFIG["Logging"]["wsd"], level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     gpu_index = faiss.index_cpu_to_gpu(res, gpu_nr, index)
     index = (index_data, gpu_index)
 
-    for artist in get_artists(CONFIG["wsd"]["artists"]):
+    for artist in get_all_artists(CONFIG["wsd"]["artists"]):
         logging.info(f"Start wsd for : {artist.name}")
         out_fname = sanitize_art_name(artist.name) + ".jsonl"
         # clear the file first before writing to it

@@ -3,7 +3,8 @@ artists_pl_path : scraped_data/artists_pl
 artists_pl_backup_path : scraped_data/artists_pl_backup_20_05/artists_pl_backup
 artists_non_pl_path : scraped_data/artists_not_pl
 generated_data_path : generated_data/
-vocab_path : generated_data/vocab/
+# TODO: fix this this shouldn't be hardcoded
+vocab_path : generated_data/vocab/30000.csv
 plots_path : plots
 websty_path : generated_data/websty
 korpusomat_path: scraped_data/korpusomat
@@ -61,7 +62,7 @@ wsd:
 
 artist_names : 
 - Białas
-- donGURALesko
+- ​donGURALesko
 - Dudek P56
 - Dwa Sławy
 - Filipek
@@ -71,24 +72,24 @@ artist_names :
 - Kukon
 - KęKę
 - LSO
-- O.S.T.R.
-- PRO8L3M
-- Paluch
-- Peja
-- Pezet
-- Pikers
-- Pięć Dwa
-- ReTo
-- Sarius
-- Slums Attack
-- Te-Tris
-- Tede
-- Ten Typ Mes
-- VNM
-- Vkie
-- Young Igi
-- Zeamsone
-- Zeus (POL)
+# - O.S.T.R.
+# - PRO8L3M
+# - Paluch
+# - Peja
+# - Pezet
+# - Pikers
+# - Pięć Dwa
+# - ReTo
+# - Sarius
+# - Slums Attack
+# - Te-Tris
+# - Tede
+# - Ten Typ Mes
+# - VNM
+# - Vkie
+# - Young Igi
+# - Zeamsone
+# - Zeus (POL)
 
 top30:
 - Bonus RPK
