@@ -48,9 +48,18 @@ class MyArtist(Artist):
             self._lyrics_len_prim_art = self.get_lyrics_len(include_features=False)
         return self._lyrics_len_prim_art
 
+    # i have this property also in the utils but i want to keep the classes self contained
     @property
     def name_sanitized(self) -> str:
-        return self.name.replace(" ", "_").replace(".", "_").replace("/", " ").replace("?", " ").strip()
+        return (
+            self.name.replace(" ", "_")
+            .replace(".", "_")
+            .replace("/", " ")
+            .replace("?", " ")
+            .replace("\u200b", "")
+            .replace("\u200c", "")
+            .strip()
+        )
 
     def get_songs_languages(self) -> list[tuple[str, int]]:
         nlp = self._init_nlp()

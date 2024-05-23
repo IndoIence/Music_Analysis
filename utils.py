@@ -13,14 +13,18 @@ CONFIG = yaml.safe_load(open(config_path))
 # %%
 
 
-def get_artist(name: str, path: Path = Path(CONFIG["artists_pl_path"])) -> MyArtist:
-    return pickle.load(open(path / name, "rb"))
+def get_artist(name: str, path: Path = Path(CONFIG["artists_pl_path"]), ext: str = ".artPkl") -> MyArtist:
+    if ext and ext[0] != ".":  # give dot to extension if it's not there
+        ext = "." + ext
+    p = path / (name + ext)
+    return pickle.load(open(p, "rb"))
 
 
-def get_artists(path: Path = Path(CONFIG["artists_pl_path"])):
+def get_all_artists(path: Path = Path(CONFIG["artists_pl_path"])):
     art_paths = [f for f in os.listdir(path) if os.path.isfile(path / f)]
     for art_path in tqdm(art_paths):
-        art = get_artist(art_path, path)
+        filename, ext = os.path.splitext(art_path)
+        art = get_artist(filename, path, ext)
         yield art
 
 
@@ -37,7 +41,7 @@ def get_all_urls():
 
 def get_biggest_by_lyrics_len(n: int = 50, only_art=True) -> list[MyArtist]:
     heap: list[tuple[int, int, MyArtist]] = []
-    for helper, artist in tqdm(enumerate(get_artists())):
+    for helper, artist in tqdm(enumerate(get_all_artists()), "sorting artists by lyrics length"):
         l = artist.lyrics_len_only_art if only_art else artist.lyrics_len_all
         if len(heap) < n:
             heapq.heappush(heap, (l, helper, artist))
@@ -62,7 +66,15 @@ def load_jsonl(p: Path):
 
 # for legacy reasons (i am retarded)this is outside this should be in the save_artist_to_pkl
 def sanitize_art_name(name: str) -> str:
-    return name.replace(" ", "_").replace(".", "_").replace("/", " ").replace("?", " ").strip()
+    return (
+        name.replace(" ", "_")
+        .replace(".", "_")
+        .replace("/", " ")
+        .replace("?", " ")
+        .replace("\u200b", "")
+        .replace("\u200c", "")
+        .strip()
+    )
 
 
 # def to_pkl(
