@@ -33,7 +33,7 @@ class LyricsAnalyzer:
             songs = art.get_limit_songs(word_limit, strict=True, only_art=True)
             if not songs:
                 continue
-            words = "\n".join(song.clean_song_lyrics for song in songs)
+            words = "\n".join(song.get_clean_song_lyrics(lower=True) for song in songs)
             doc = nlp(words)
             c = Counter((token.lemma_, token.pos_) for token in doc if is_valid(token))
             arts.set_description(f"{art}, words_count: {len(c)}")

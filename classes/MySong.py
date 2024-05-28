@@ -7,12 +7,10 @@ class MySong(Song):
         self.__dict__ = song.__dict__
         self.language = None
 
-    @property
-    def clean_song_lyrics(self, lower=True):
+    def get_clean_song_lyrics(self, lower=True):
         # find the first occurance of the word "Lyrics", and discard what's before that
         lyrics_start = self.lyrics.find("Lyrics") + len("Lyrics")
         lyrics_cleaned = self.lyrics[lyrics_start:]
-
         # cut out the end of the string (the word Embed and the number or just the word Embed)
         # search for the number on the end and if it exists cut out from it
         if "Embed" == lyrics_cleaned[-5:]:
@@ -24,10 +22,14 @@ class MySong(Song):
         # clean english contaminated phrases from genius
         lyrics_cleaned = re.sub(r"You might also like", "", lyrics_cleaned)
         # should ignore anything in the square brackets
-        lyrics_cleaned = clean_brackets(lyrics_cleaned)
+        # usualy genius has indication of an artists singing there
+        lyrics_cleaned = clean_square_brackets(lyrics_cleaned)
+        # clean linebreaks
+        lyrics_cleaned = lyrics_cleaned.replace("\n", " ")
+        lyrics_cleaned = lyrics_cleaned.replace("\u200b", "").replace("\u200c", "")
         return lyrics_cleaned
 
 
-def clean_brackets(text):
+def clean_square_brackets(text):
     pattern = r"\[.*?\]"
     return re.sub(pattern, "", text)

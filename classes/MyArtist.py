@@ -88,7 +88,7 @@ class MyArtist(Artist):
                 continue
             if not include_features and song._body["primary_artist"]["id"] != self.id:
                 continue
-            count += self.count_words(song.clean_song_lyrics)
+            count += self.count_words(song.get_clean_song_lyrics())
         return count
 
     def _get_my_songs(self) -> list[MySong]:
@@ -128,7 +128,7 @@ class MyArtist(Artist):
                 continue
             if prim_art and song._body["primary_artist"]["id"] != self.id:
                 continue
-            words = word_tokenize(song.clean_song_lyrics)
+            words = word_tokenize(song.get_clean_song_lyrics())
             count += len(words)
             result.append(song)
             if count >= limit:
@@ -156,7 +156,7 @@ class MyArtist(Artist):
             for i, song in enumerate(self.songs):
                 f.write(str(i + 1) + ". " + song.title)
                 f.write("\n\n")
-                f.write(song.clean_song_lyrics)
+                f.write(song.get_clean_song_lyrics())
                 f.write("\n\n")
 
     def to_pickle(
