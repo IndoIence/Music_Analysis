@@ -1,2 +1,6 @@
 notebooks/LastFM_scraping.ipynb
 notebooks/First_Genius_Scrape.ipynb
+data/genius/
+config.yaml
+__pycache__/
+logs/
