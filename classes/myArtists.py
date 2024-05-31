@@ -57,4 +57,11 @@ class MyArtist(Artist):
 
 
 def sanitize_name(name: str) -> str:
-    return name.replace("/", " ").replace("?", " ").replace("\u200b", "").strip()
+    return (
+        name.replace("/", " ")
+        .replace("?", " ")
+        .replace("\u200b", "")
+        .replace("\n", "")
+        .replace(" ", "_")
+        .strip()
+    )

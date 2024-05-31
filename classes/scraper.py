@@ -11,22 +11,16 @@ import sys
 
 
 class RedirectPrints:
-    def __init__(self, new_stdout, new_stderr=None):
-        if new_stderr is None:
-            new_stderr = new_stdout
+    def __init__(self, new_stdout):
         self.new_stdout = new_stdout
-        self.new_stderr = new_stderr
         self.old_stdout = sys.stdout
 
     def __enter__(self):
         sys.stdout = self.new_stdout
-        sys.stderr = self.new_stderr
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.new_stdout.flush()  # Ensure the buffer is flushed
-        self.new_stderr.flush()
         sys.stdout = self.old_stdout
-        sys.stderr = self.old_stderr
 
 
 class GeniusScraper:
