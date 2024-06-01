@@ -6,6 +6,13 @@ from pickle import dump
 # MyArtist class is a wrapper for the Artist class
 # It adds functionality to the Artist class
 # It is used to save the Artist object to a artPkl file
+# TODO: information about albums
+# TODO: updating existing artists with new attributes
+# #     def update_instance(self):
+#         # Add any new attributes that were added after instances were pickled
+#         if not hasattr(self, 'new_attribute'):
+#             self.new_attribute = "default_value"
+#         # Add more attributes as needed
 
 
 class MyArtist(Artist):
@@ -52,8 +59,20 @@ class MyArtist(Artist):
                 for song in self.songs
                 if self.id == song._body["primary_artist"]["id"]
                 and song._body["featured_artists"] == []
+                and song.language == self.language
             ]
         return sum([song.lyrics_length for song in songs])
+
+    def get_albums(self) -> list[dict]:
+        albums = []
+        for song in self.songs:
+            if (
+                "album" in song._body
+                and bool(song._body["album"])
+                and song._body["album"] not in albums
+            ):
+                albums.append(song._body["album"])
+        return albums
 
 
 def sanitize_name(name: str) -> str:

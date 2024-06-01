@@ -1,10 +1,12 @@
 import lyricsgenius
 import pickle
 import logging
-from utils import GENIUS_CONFIG, sanitize_name
+from utils import GENIUS_CONFIG, sanitize_name, CONFIG
 from pathlib import Path
+from classes.myArtists import MyArtist
 from requests import Timeout
 import sys
+from tqdm import tqdm
 
 # TODO: add handling of 0 width space in the name
 # TODO: move token to env variable
@@ -53,15 +55,39 @@ class GeniusScraper:
 
     def save_urls(self, path: Path = Path(GENIUS_CONFIG["urls_file"])):
         with open(path, "w") as f:
-            for url in sorted(self.urls):
+            for url in sorted(set(self.urls)):
                 f.write(url.lower() + "\n")
 
+    def get_artist_genius(self, artist_name: str, max_songs: int = 2000):
+        artist = None
+        try:
+            artist = self.genius.search_artist(artist_name, max_songs=max_songs)
+        except TimeoutError as err:
+            message = f"timeout for {artist_name}"
+            logging.error(f"{message} {err}")
+            # TODO: save to timeout file the name of unprocessed artist
+        except Exception as e:
+            message = f"Error for {artist_name}"
+            logging.exception(f"{message} {e}")
+        return artist
+
     def scrape(self, artists_list: list[str], max_songs: int = 2000):
-        for artist_name in artists_list:
-            artist = self.scrape_artist(artist_name, max_songs)
-            if not artist:
+        for artist_name in tqdm(artists_list):
+            # first check if the artist was already scraped
+            logging.info(f"Scraping {artist_name}")
+            artist = self.get_artist_genius(artist_name, 0)
+            if artist is None:
                 logging.info(f"Nothing found for: {artist_name}")
                 continue
+            if artist.url.lower() in self.urls:
+                logging.info(f"Artist {artist_name} already scraped. URL: {artist.url}")
+                continue
+            # now scrape songs
+            artist = self.get_artist_genius(artist_name, max_songs)
+            if artist is None:
+                logging.error(f"Unable to scrape: {artist_name}")
+                continue
+
             if names_very_different(artist_name, artist.name):
                 message = f"Difference in names: Name from lastFM: {artist_name},\nName from Genius {artist.name}"
                 print(message)
@@ -88,34 +114,20 @@ class GeniusScraper:
         with open(folder / artist_name, "wb") as f:
             pickle.dump(artist, f)
 
-    def scrape_artist(self, artist_name: list[str], max_songs: int = 2000):
-        # first try to find the artist in the urls
-        logging.info(f"Beginning search for {artist_name}")
-        artist = None
-        try:
-            artist = self.genius.search_artist(artist_name, max_songs=0)
-        except TimeoutError as err:
-            message = f"timeout for {artist_name}"
-            logging.error(f"{message} {err}")
-            # TODO: save to timeout file the name of unprocessed artist
-        except Exception as e:
-            message = f"Error for {artist_name}"
-            logging.exception(f"{message} {e}")
+    def process_artists(self):
+        unprocessed = Path(CONFIG["genius"]["save_path"])
+        pl_path = Path(CONFIG["polish_artist_path"])
+        n_pl_path = Path(CONFIG["other_artist_path"])
+        processed_path = Path(CONFIG["processed_path"])
 
-        if artist is not None and artist.url.lower() in self.urls:
-            logging.info(f"Artist {artist_name} already scraped. URL: {artist.url}")
-            return None
-
-        try:
-            artist = self.genius.search_artist(artist_name, max_songs=max_songs)
-        except TimeoutError as err:
-            message = f"timeout for {artist_name}"
-            logging.error(f"{message} {err}")
-            # TODO: save to timeout file the name of unprocessed artist
-        except Exception as e:
-            message = f"Error for {artist_name}"
-            logging.error(f"{message} {err}")
-        return artist
+        for file in tqdm(unprocessed.iterdir()):
+            if not file.is_file():
+                continue
+            artist = pickle.load(open(file, "rb"))
+            my_artist = MyArtist(artist)
+            save_path = pl_path if my_artist.language == "pl" else n_pl_path
+            my_artist.to_pickle(save_path)
+            file.rename(processed_path / file.name)
 
 
 def names_very_different(lastfm_name, genius_name):
@@ -125,7 +137,7 @@ def names_very_different(lastfm_name, genius_name):
     # if the names are short don't consider
     if len(lastfm_name) < 3 or len(genius_name) < 3:
         return False
-    for i in range(len(lastfm_name) - 3):
+    for i in range(len(lastfm_name) - 2):
         if lastfm_name[i : i + 3].lower() in genius_name.lower():
             return False
     return True
