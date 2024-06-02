@@ -58,6 +58,16 @@ class GeniusScraper:
             for url in sorted(set(self.urls)):
                 f.write(url.lower() + "\n")
 
+    def update_urls(self, path: Path):
+        # update urls with the ones from a different file
+        new_urls = open(path, "r").readlines()
+        new_urls = [url.lower().strip() for url in new_urls]
+        updated = self.urls + new_urls
+        print(len(updated), len(self.urls), len(new_urls))
+        print(len(set(updated)), len(set(self.urls)), len(set(new_urls)))
+        self.urls = sorted(set(updated))
+        self.save_urls()
+
     def get_artist_genius(self, artist_name: str, max_songs: int = 2000):
         artist = None
         try:
@@ -119,15 +129,21 @@ class GeniusScraper:
         pl_path = Path(CONFIG["polish_artist_path"])
         n_pl_path = Path(CONFIG["other_artist_path"])
         processed_path = Path(CONFIG["processed_path"])
-
+        pl_count = 0
+        n_pl_count = 0
         for file in tqdm(unprocessed.iterdir()):
             if not file.is_file():
                 continue
             artist = pickle.load(open(file, "rb"))
             my_artist = MyArtist(artist)
             save_path = pl_path if my_artist.language == "pl" else n_pl_path
+            if save_path == pl_path:
+                pl_count += 1
+            else:
+                n_pl_count += 1
             my_artist.to_pickle(save_path)
             file.rename(processed_path / file.name)
+        logging.info(f"Processed all artists: pl: {pl_count}, non_pl: {n_pl_count}")
 
 
 def names_very_different(lastfm_name, genius_name):
