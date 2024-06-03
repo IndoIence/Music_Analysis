@@ -20,9 +20,10 @@ class MySong(Song):
         return my_song
 
     @classmethod
-    def get_spacy(cls):
+    def get_spacy(cls, model_name: str = "pl_core_news_sm", language: bool = True):
         if cls._nlp is None:
-            cls._nlp = spacy.load("pl_core_news_sm")
+            cls._nlp = spacy.load(model_name)
+        if language:
             cls._nlp.add_pipe("language_detector")
         return cls._nlp
 
@@ -39,9 +40,27 @@ class MySong(Song):
         self, remove_section_headers=True, remove_newlines=True, lower=True
     ):
         lyrics = self.lyrics.strip()
+        if int(self._body["primary_artist"]["id"]) == 114783:
+            # really wierd edge case with Taco Hemingway
+            # every song has wierd line
+            # "See Taco Hemingway LiveGet tickets as low as $75You might also like"
+            # remove it
+            lyrics = self.lyrics.replace(
+                "See Taco Hemingway LiveGet tickets as low as $75You might also like",
+                "",
+            )
+        # Edge case for everyone
+        # solving it like that does not seem right but i don't have time
+        lyrics = lyrics.replace("You might also like", "")
         if remove_section_headers:
             lyrics = re.sub(r"(\[.*?\])*", "", lyrics)
             lyrics = re.sub("\n{2}", "\n", lyrics)
+        # only keep that part of the lyrics that is after the word: "Lyrics"
+        # if it is in the first 200 characters
+        # then remove everything before the first occurence of it in the string
+        pattern = r"Lyrics"
+        if pattern in lyrics[:200]:
+            lyrics = lyrics[lyrics.find(pattern) + len(pattern) :]
         # remove a numeral and Embed at the end of the string
         pattern = r"(\d*Embed\s*)$"
         lyrics = re.sub(pattern, "", lyrics)
