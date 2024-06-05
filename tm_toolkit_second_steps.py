@@ -1,5 +1,11 @@
 # %%
-from utils import get_all_artists, CONFIG, sanitize_art_name, get_artist, get_biggest_by_lyrics_len
+from utils import (
+    get_all_artists,
+    CONFIG,
+    sanitize_art_name,
+    get_artist,
+    get_biggest_by_lyrics_len,
+)
 from pathlib import Path
 from tqdm import tqdm
 import tempfile
@@ -17,7 +23,7 @@ artists = get_biggest_by_lyrics_len(n=50)
 artists = [a for a in artists if a.songs]
 texts = {}
 for artist in tqdm(artists, "getting lyrics for artist"):
-    text = "\n".join(song.clean_song_lyrics for song in artist.get_limit_songs(30000, strict=True, only_art=True))
+    text = "\n".join(song.get_clean_song_lyrics() for song in artist.get_limit_songs(30000, strict=True, only_art=True))
     if text:
         texts[artist.name_sanitized] = text
 # %%

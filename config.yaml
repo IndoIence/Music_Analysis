@@ -40,7 +40,8 @@ wsd:
   word_limit: 5000
   outputs : generated_data/wsd_outputs_fixed
   artists:
-  # - Bonus RPK
+  - Łona_combined
+  - Bonus RPK
   # - Białas
   # - Bonson
   # - Borixon

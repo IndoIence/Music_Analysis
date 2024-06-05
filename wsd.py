@@ -112,10 +112,11 @@ if __name__ == "__main__":
         limit_songs = artist.get_limit_songs(word_limit, only_art=True)
 
         for song in tqdm(limit_songs, f"{artist.name} songs"):
-            doc = nlp(song.clean_song_lyrics)
+            text = song.get_clean_song_lyrics()
+            doc = nlp(text)
             song_dict = {
                 "name": song.title,
-                "text": song.lyrics,
+                "text": text,
                 "wsd": [],
             }
 
@@ -135,7 +136,7 @@ if __name__ == "__main__":
                 song_dict["wsd"].append({"word": word, "suggestions": suggestions})
             with open(Path(out_dir) / out_fname, "a") as f:
                 try:
-                    json.dump(song_dict, f, ensure_ascii=False)
-                    f.write("\n")
+                    json.dump(song_dict, f, ensure_ascii=False, indent=4)
+                    f.write("\n\n")
                 except:
                     logging.error(f"Saving to file failed for : {artist.name}")
