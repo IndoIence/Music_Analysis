@@ -10,7 +10,7 @@ __pycache__
 /typings
 /notebooks/
 # files
-
+encoder.faissindex
 TODO.md
 default_model
 delete.py
