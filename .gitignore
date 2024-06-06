@@ -9,10 +9,15 @@ __pycache__
 /generated_data
 /typings
 /notebooks/
+/ignore/
+.conda
+.mypy_cache
+.idea
+.vscode
 # files
 encoder.faissindex
 TODO.md
-default_model
+.default_model
 delete.py
 notebook.ipynb
 

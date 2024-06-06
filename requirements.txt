@@ -1,4 +1,15 @@
 lyricsgenius~=3.0.1
 nltk~=3.5
+# if nltk tokenization doesn't work try nltk.download('punkt')
 pre-commit
 types-PyYAML
+spacy
+https://github.com/explosion/spacy-models/releases/download/pl_core_news_sm-3.0.0/pl_core_news_sm-3.0.0.tar.gz
+transformers
+tqdm
+git+https://gitlab.clarin-pl.eu/libraries/plwn_api.git
+ipykernel
+matplotlib
+pandas
+scikit-learn
+numpy

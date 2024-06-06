@@ -13,7 +13,9 @@ CONFIG = yaml.safe_load(open(config_path))
 # %%
 
 
-def get_artist(name: str, path: Path = Path(CONFIG["artists_pl_path"]), ext: str = ".artPkl") -> MyArtist:
+def get_artist(
+    name: str, path: Path = Path(CONFIG["artists_pl_path"]), ext: str = ".artPkl"
+) -> MyArtist:
     if ext and ext[0] != ".":  # give dot to extension if it's not there
         ext = "." + ext
     p = path / (name + ext)
@@ -41,7 +43,9 @@ def get_all_urls():
 
 def get_biggest_by_lyrics_len(n: int = 50, only_art=True) -> list[MyArtist]:
     heap: list[tuple[int, int, MyArtist]] = []
-    for helper, artist in tqdm(enumerate(get_all_artists()), "sorting artists by lyrics length"):
+    for helper, artist in tqdm(
+        enumerate(get_all_artists()), "sorting artists by lyrics length"
+    ):
         l = artist.lyrics_len_only_art if only_art else artist.lyrics_len_all
         if len(heap) < n:
             heapq.heappush(heap, (l, helper, artist))
@@ -50,7 +54,9 @@ def get_biggest_by_lyrics_len(n: int = 50, only_art=True) -> list[MyArtist]:
     return [artist for _, _, artist in sorted(heap, reverse=True)]
 
 
-def all_artists_genius(genius_path: Path = Path(CONFIG["Genius_scraping"]["save_path"])):
+def all_artists_genius(
+    genius_path: Path = Path(CONFIG["Genius_scraping"]["save_path"]),
+):
     f_names = os.listdir(genius_path)
     for art_file in f_names:
         artist_path = genius_path / art_file
@@ -95,7 +101,7 @@ def sanitize_art_name(name: str) -> str:
 def get_wsd_data():
     """for all artists return a tuple (file name, list)
     where list has wsd for each song"""
-    path = Path(CONFIG["wsd_outputs"])
+    path = Path(CONFIG["wsd"]["outputs"]).parent / "wsd"
     wsd_files = [f for f in os.listdir(path) if os.path.isfile(path / f)]
     for wsd_file in wsd_files:
         result = []

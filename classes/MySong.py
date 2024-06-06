@@ -17,12 +17,13 @@ class MySong(Song):
             lyrics_cleaned = lyrics_cleaned[:-5]
             pattern = r"\s*\d*$"
             lyrics_cleaned = re.sub(pattern, "", lyrics_cleaned)
+        # clean english contaminated phrases from genius
+        lyrics_cleaned = re.sub(r"You might also like", "", lyrics_cleaned)
         if lower:
             lyrics_cleaned = lyrics_cleaned.lower()
         if not linebreaks:
             lyrics_cleaned = lyrics_cleaned.replace("\n", " ")
-        # clean english contaminated phrases from genius
-        lyrics_cleaned = re.sub(r"You might also like", "", lyrics_cleaned)
+
         # should ignore anything in the square brackets
         # usualy genius has indication of an artists singing there
         lyrics_cleaned = clean_square_brackets(lyrics_cleaned)
