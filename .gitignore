@@ -15,6 +15,9 @@ __pycache__
 .idea
 .vscode
 # files
+investigate.py
+wordnet-analysis.tsv
+temp.txt
 encoder.faissindex
 TODO.md
 .default_model

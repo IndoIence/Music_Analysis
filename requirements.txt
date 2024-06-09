@@ -13,3 +13,7 @@ matplotlib
 pandas
 scikit-learn
 numpy
+spacy_fastlang
+datasets
+transformers
+seaborn

@@ -9,24 +9,24 @@ from pickle import dump
 
 
 class MyArtist(Artist):
-    @staticmethod
-    def _init_nlp():
-        # is it ok to lazy import like that?
-        import spacy
-        import spacy_fastlang
-
-        nlp = spacy.load("pl_core_news_lg")
-        nlp.add_pipe("language_detector")
-        return nlp
 
     def __init__(self, artist: Artist):
         self.__dict__ = artist.__dict__
         self.songs = self._get_my_songs()
-        self.songs_languages = self.get_songs_languages()
-        self.language: str = self.songs_languages[0][0]
+        self.language: str = self._get_language()
         self._lyrics_len_only_art: int = self.lyrics_len_only_art
         self._lyrics_len_all: int = self.lyrics_len_all
         self._lyrics_len_prim_art: int = self.lyrics_len_prim_art
+        self.translation_table: dict[str, str] = {
+            ".": "_",
+            " ": "_",
+            "/": "",
+            "?": "",
+            "\u200c": "",
+            "\u200b": "",
+            "(": "",
+            ")": "",
+        }
         # self.lyrics_len: int = self.lyrics_len
         # self.nlp_doc = sel    out = ''f._get_nlp_docs(nlp)
 
@@ -51,29 +51,7 @@ class MyArtist(Artist):
     # i have this property also in the utils but i want to keep the classes self contained
     @property
     def name_sanitized(self) -> str:
-        return (
-            self.name.replace(" ", "_")
-            .replace(".", "_")
-            .replace("/", " ")
-            .replace("?", " ")
-            .replace("\u200b", "")
-            .replace("\u200c", "")
-            .strip()
-        )
-
-    def get_songs_languages(self) -> list[tuple[str, int]]:
-        nlp = self._init_nlp()
-        if not self.songs:
-            return [("xx", -1)]
-        counter: dict[str, int] = {}
-        for song in self.songs:
-            lang = nlp(song.lyrics)._.language
-            song.language = lang
-            if lang in counter:
-                counter[lang] += 1
-            else:
-                counter[lang] = 1
-        return sorted(counter.items(), key=lambda x: x[1], reverse=True)
+        return self.name.translate(self.translation_table).strip()
 
     # TODO: Is include features even necessary? Isn't it the same as only_art?
     def get_lyrics_len(self, include_features=True, only_art=False) -> int:
@@ -100,6 +78,8 @@ class MyArtist(Artist):
                 output.append(song)
             elif isinstance(song, Song):
                 output.append(MySong(song))
+            else:
+                raise ValueError("song is not a Song or MySong")
         return output
 
     def get_limit_songs(
@@ -165,7 +145,7 @@ class MyArtist(Artist):
         file_name: str = "",
         suffix: str = ".artPkl",
     ):
-        if file_name is None:
+        if file_name == "":
             file_name = self.name_sanitized
         # before saving check if there are any / or ? in the name -> if so replace them
         if "/" in file_name or "?" in file_name:
