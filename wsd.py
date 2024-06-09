@@ -2,7 +2,7 @@ from transformers import pipeline
 import os
 import pickle
 import faiss
-import datasets
+from datasets import load_dataset
 import json
 from tqdm import tqdm
 from pathlib import Path
@@ -17,7 +17,9 @@ if typing.TYPE_CHECKING:
 from utils import CONFIG, sanitize_art_name, get_artist
 
 logging.basicConfig(
-    filename=CONFIG["Logging"]["wsd"], level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    filename=CONFIG["Logging"]["wsd"],
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
 
@@ -37,9 +39,12 @@ def load_model(model_name: str = "clarin-knext/wsd-encoder"):
 
 
 def load_index(index_name: str = "clarin-knext/wsd-linking-index"):
-    ds = datasets.load_dataset(index_name, use_auth_token=auth_token)["train"]
-    index_data = {idx: (e_id, e_text) for idx, (e_id, e_text) in enumerate(zip(ds["entities"], ds["texts"]))}
-    faiss_index = faiss.read_index("./encoder.faissindex", faiss.IO_FLAG_MMAP)
+    ds = load_dataset(index_name, use_auth_token=auth_token)["train"]
+    index_data = {
+        idx: (e_id, e_text)
+        for idx, (e_id, e_text) in enumerate(zip(ds["entities"], ds["texts"]))
+    }
+    faiss_index = faiss.read_index("./ignore/encoder.faissindex", faiss.IO_FLAG_MMAP)
     return index_data, faiss_index
 
 
@@ -51,9 +56,13 @@ def predict(index, text: str = sample_text, top_k: int = 3, raw=True):
     scores, indices = faiss_index.search(query, top_k)
     scores, indices = scores.tolist(), indices.tolist()
     if raw:
-        return scores, indices
+        return scores, indices, query
     results = "\n".join(
-        [f"{index_data[result[0]]}: {result[1]}" for output in zip(indices, scores) for result in zip(*output)]
+        [
+            f"{index_data[result[0]]}: {result[1]}"
+            for output in zip(indices, scores)
+            for result in zip(*output)
+        ]
     )
     return results
 
@@ -71,7 +80,9 @@ def input_from_doc(doc: Doc, window=100):
             middle = f"[unused0] {token.text} [unused1]"
             start_ind = max(0, token.idx - window)
             start = doc.text[start_ind : token.idx]
-            end = doc.text[token.idx + len(token.text) : token.idx + len(token.text) + window]
+            end = doc.text[
+                token.idx + len(token.text) : token.idx + len(token.text) + window
+            ]
             yield token.text, start + middle + end
 
 
@@ -121,7 +132,7 @@ if __name__ == "__main__":
             }
 
             for word, context in tqdm(input_from_doc(doc), song.title):
-                scores, indices = predict(index, context)
+                scores, indices, vector = predict(index, context)
                 suggestions = {}
                 # transform 2d lists (scores, indices) to human readable outputs
                 for lists in zip(scores, indices):
@@ -133,10 +144,21 @@ if __name__ == "__main__":
                             "definition": definition,
                             "score": score,
                         }
-                song_dict["wsd"].append({"word": word, "suggestions": suggestions})
+                song_dict["wsd"].append(
+                    {
+                        "word": word,
+                        "vector": vector.tolist(),
+                        "suggestions": suggestions,
+                    }
+                )
             with open(Path(out_dir) / out_fname, "a") as f:
                 try:
-                    json.dump(song_dict, f, ensure_ascii=False, indent=4)
-                    f.write("\n\n")
+                    json.dumps(
+                        song_dict,
+                        ensure_ascii=False,
+                        # indent=4,
+                        # separators=(",", ":"),
+                    )
+                    f.write("\n")
                 except:
                     logging.error(f"Saving to file failed for : {artist.name}")

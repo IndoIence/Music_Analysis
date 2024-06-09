@@ -1,6 +1,7 @@
 # %%
 from pathlib import Path
 from classes.MyArtist import MyArtist
+from classes.MySong import MySong
 import json
 import pickle
 import heapq
@@ -8,7 +9,7 @@ import os
 import yaml
 from tqdm import tqdm
 
-config_path = Path(__file__).parent / "config.yaml"
+config_path = Path(__file__).parent / ".config.yaml"
 CONFIG = yaml.safe_load(open(config_path))
 # %%
 
@@ -24,6 +25,7 @@ def get_artist(
 
 def get_all_artists(path: Path = Path(CONFIG["artists_pl_path"])):
     art_paths = [f for f in os.listdir(path) if os.path.isfile(path / f)]
+    art_paths.sort()
     for art_path in tqdm(art_paths):
         filename, ext = os.path.splitext(art_path)
         art = get_artist(filename, path, ext)
@@ -70,7 +72,6 @@ def load_jsonl(p: Path):
             yield json.loads(line)
 
 
-# for legacy reasons (i am retarded)this is outside this should be in the save_artist_to_pkl
 def sanitize_art_name(name: str) -> str:
     return (
         name.replace(" ", "_")
@@ -81,6 +82,14 @@ def sanitize_art_name(name: str) -> str:
         .replace("\u200c", "")
         .strip()
     )
+
+
+# def webstify(arts: list[MyArtist]):
+#     for art in arts:
+#         art.name = sanitize_art_name(art.name)
+#         for song in art.songs:
+#             song.title = sanitize_art_name(song.title)
+#     return arts
 
 
 # def to_pkl(
