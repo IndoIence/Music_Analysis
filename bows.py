@@ -2,10 +2,12 @@
 from utils import get_biggest_by_lyrics_len, get_artist
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sentence_transformers import SentenceTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score, classification_report
 from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
     confusion_matrix,
     ConfusionMatrixDisplay,
     classification_report,
@@ -24,7 +26,7 @@ for art in biggest_artists:
     print(art.name)
     print(art.lyrics_len_only_art)
 for artist in biggest_artists:
-    songs = artist.get_limit_songs(70e4, only_art=True)
+    songs = artist.get_limit_songs(3e4, only_art=True)
     for song in songs:
         data_list.append({"texts": song.get_clean_song_lyrics(), "artist": artist.name})
 
@@ -36,8 +38,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 # %%
 # Initialize the vectorizer
-vectorizer = TfidfVectorizer()
-# vectorizer = CountVectorizer()
+# vectorizer = TfidfVectorizer()
+vectorizer = CountVectorizer()
 
 # Fit and transform the training data, transform the test data
 X_train_vec = vectorizer.fit_transform(X_train)
@@ -63,7 +65,7 @@ print("Classification Report:")
 print(report)
 
 # %%
-fig, ax = plt.subplots(1, 2, figsize=(14, 6))
+fig, ax = plt.subplots(figsize=(6, 6))
 cm_count_not_norm = confusion_matrix(y_test, y_pred, labels=classifier.classes_)
 cm_count = (
     cm_count_not_norm.astype("float") / cm_count_not_norm.sum(axis=1)[:, np.newaxis]
@@ -76,11 +78,11 @@ sns.heatmap(
     cmap="Blues",
     xticklabels=classifier.classes_,
     yticklabels=classifier.classes_,
-    ax=ax[0],
+    ax=ax,
 )
-ax[0].set_title("Confusion Matrix")
-ax[0].set_xlabel("Predicted")
-ax[0].set_ylabel("Actual")
+ax.set_title("Confusion Matrix")
+ax.set_xlabel("Predicted")
+ax.set_ylabel("Actual")
 plt.show()
 
 # %%
