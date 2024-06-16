@@ -3,20 +3,25 @@ import re
 
 
 class MySong(Song):
+    _nlp = None
+
     @staticmethod
-    def _init_nlp():
+    def _init_nlp(model_name: str = "pl_core_news_sm", language: bool = True):
         # is it ok to lazy import like that?
         import spacy
         import spacy_fastlang
 
-        nlp = spacy.load("pl_core_news_lg")
-        nlp.add_pipe("language_detector")
-        return nlp
+        if MySong._nlp is None:
+            nlp = spacy.load(model_name)
+            MySong._nlp = nlp
+        if language and "language_detector" not in MySong._nlp.pipe_names:
+            MySong._nlp.add_pipe("language_detector")
+        return MySong._nlp
 
     def __init__(self, song: Song):
         self.__dict__ = song.__dict__
-        self.nlp = None
-        self.language = None
+        self.language: str = self._get_language()
+        self.word_count: int = self._get_word_count()
 
     def get_clean_song_lyrics(self, lower=True, linebreaks=False):
         # find the first occurance of the word "Lyrics", and discard what's before that
@@ -27,7 +32,7 @@ class MySong(Song):
             # every song has wierd line
             # "See Taco Hemingway LiveGet tickets as low as $75You might also like"
             # remove it
-            lyrics_cleaned.replace(
+            lyrics_cleaned = lyrics_cleaned.replace(
                 "See Taco Hemingway LiveGet tickets as low as $75You might also like",
                 "",
             )
@@ -51,10 +56,14 @@ class MySong(Song):
         lyrics_cleaned = lyrics_cleaned.strip()
         return lyrics_cleaned
 
-    def get_language(self) -> list[tuple[str, int]]:
-        self.nlp = self._init_nlp() if self.nlp is None else self.nlp
-        lang = self.nlp(self.get_clean_song_lyrics())._.language
+    def _get_language(self) -> str:
+        nlp = self._init_nlp()
+        doc = nlp(self.get_clean_song_lyrics())
+        lang = doc._.language if doc._.language_score > 0.8 else "xx"
         return lang
+
+    def _get_word_count(self) -> int:
+        return len(re.findall(r"\w+", self.get_clean_song_lyrics()))
 
 
 def clean_square_brackets(text):

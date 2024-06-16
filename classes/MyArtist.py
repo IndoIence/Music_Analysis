@@ -1,11 +1,8 @@
 from lyricsgenius.genius import Artist, Song
 from classes.MySong import MySong
 from pathlib import Path
-from nltk import word_tokenize
 from copy import deepcopy
 from pickle import dump
-
-# i don't know if scpacy_fastlang is actually needed
 
 
 class MyArtist(Artist):
@@ -14,18 +11,20 @@ class MyArtist(Artist):
         self.__dict__ = artist.__dict__
         self.songs = self._get_my_songs()
         self.language: str = self._get_language()
-        self._lyrics_len_only_art: int = self.lyrics_len_only_art
-        self._lyrics_len_all: int = self.lyrics_len_all
-        self._lyrics_len_prim_art: int = self.lyrics_len_prim_art
-        self.translation_table: dict[str, str] = {
-            ".": "_",
-            " ": "_",
-            "/": "",
-            "?": "",
-            "\u200c": "",
-            "\u200b": "",
-            "(": "",
-            ")": "",
+        self._lyrics_len_only_art: int = self.get_lyrics_len(
+            only_art=True, include_features=False
+        )
+        self._lyrics_len_all: int = self.get_lyrics_len(include_features=True)
+        self._lyrics_len_prim_art: int = self.get_lyrics_len(include_features=False)
+        self.translation_table: dict[int, str] = {
+            ord("."): "_",
+            ord(" "): "_",
+            ord("/"): "",
+            ord("?"): "",
+            ord("\u200c"): "",
+            ord("\u200b"): "",
+            ord("("): "",
+            ord(")"): "",
         }
         # self.lyrics_len: int = self.lyrics_len
         # self.nlp_doc = sel    out = ''f._get_nlp_docs(nlp)
@@ -33,7 +32,9 @@ class MyArtist(Artist):
     @property
     def lyrics_len_only_art(self):
         if not hasattr(self, "_lyrics_len_only_art"):
-            self._lyrics_len_only_art = self.get_lyrics_len(only_art=True)
+            self._lyrics_len_only_art = self.get_lyrics_len(
+                only_art=True, include_features=False
+            )
         return self._lyrics_len_only_art
 
     @property
@@ -60,13 +61,13 @@ class MyArtist(Artist):
         count = 0
         for song in self.songs:
             # if the song primary artists is the current artist then include it
-            if song.language != "pl":
+            if song.language != self.language:
                 continue
             if only_art and song._body["featured_artists"]:
                 continue
             if not include_features and song._body["primary_artist"]["id"] != self.id:
                 continue
-            count += self.count_words(song.get_clean_song_lyrics())
+            count += song.word_count
         return count
 
     def _get_my_songs(self) -> list[MySong]:
@@ -74,19 +75,28 @@ class MyArtist(Artist):
             return []
         output = []
         for song in self.songs:
-            if isinstance(song, MySong):
-                output.append(song)
-            elif isinstance(song, Song):
+            if isinstance(song, Song) or isinstance(song, MySong):
                 output.append(MySong(song))
             else:
                 raise ValueError("song is not a Song or MySong")
         return output
 
+    def _get_language(self) -> str:
+        if not self.songs:
+            return "xx"
+        counter: dict[str, int] = {}
+        for song in self.songs:
+            counter[song.language] = counter.get(song.language, 0) + 1
+        if not counter:
+            return "xx"
+        # I don't like this as this doesn't inform me if multiple languages have the same count
+        return max(counter.items(), key=lambda x: x[1])[0]
+
     def get_limit_songs(
         # i don't know how to achieve a infinite int with type hints
         self,
         limit: int | float = float("inf"),
-        prim_art: bool = False,
+        prim_art: bool = True,
         only_art: bool = False,
         strict: bool = False,
     ) -> list[MySong]:
@@ -108,21 +118,22 @@ class MyArtist(Artist):
                 continue
             if prim_art and song._body["primary_artist"]["id"] != self.id:
                 continue
-            words = word_tokenize(song.get_clean_song_lyrics())
-            count += len(words)
+            word_count = song.word_count
+            count += word_count
             result.append(song)
             if count >= limit:
                 diff = int(count - limit)
                 if strict and diff > 0:
-                    words = words[:-diff]
+                    # get just the right amount of words from the last song
+                    words = " ".join(
+                        song.get_clean_song_lyrics(
+                            lower=False, linebreaks=True
+                        ).split()[:-diff]
+                    )
                     new_song = deepcopy(song)
                     new_song.lyrics = " ".join(words)
                 break
         return result
-
-    # this should rather be in the song i think
-    def count_words(self, text: str) -> int:
-        return len(word_tokenize(text))
 
     def save_lyrics(self, save_path: Path = Path(""), filename="", extension="txt"):  # type: ignore
         """
@@ -152,3 +163,9 @@ class MyArtist(Artist):
             file_name = file_name.replace("/", " ").replace("?", " ")
         with open(out_path / (file_name + suffix), "wb") as f:
             dump(self, f)
+
+    def __str__(self):
+        """Return a string representation of the Artist object."""
+        msg = f"{self.name}, {self.num_songs} songs, {self.lyrics_len_only_art} words no features {self.lyrics_len_all} all words"
+        msg = msg[:-1] if self.num_songs == 1 else msg
+        return msg
