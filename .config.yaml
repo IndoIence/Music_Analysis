@@ -4,7 +4,7 @@ artists_pl_backup_path : scraped_data/artists_pl_backup_20_05/artists_pl_backup
 artists_non_pl_path : scraped_data/artists_not_pl
 generated_data_path : generated_data/
 # TODO: fix this this shouldn't be hardcoded
-vocab_path : generated_data/vocab/30000.csv
+vocab_path : generated_data/vocab/
 plots_path : plots
 websty_path : generated_data/websty
 korpusomat_path: scraped_data/korpusomat
@@ -47,7 +47,7 @@ wsd:
   # - Borixon
   # - KaeN
   # - Kaz Bałagane
-  - Dwa_S__awy
+  - Dwa_Sławy
   # - Paluch
   # - Popek
   # # - Pezet
@@ -63,8 +63,28 @@ wsd:
 
 artist_names : 
 - Białas
-- ​donGURALesko
+- donGURALesko
 - Dudek P56
+- Dwa Sławy
+- Filipek
+- KaeN
+- Kartky
+- Kaz Bałagane
+- Kukon
+- KęKę
+- LSO
+- O.S.T.R.
+- PRO8L3M
+- Paluch
+- Peja
+- Pezet
+- Pikers
+- Pięć Dwa
+- ReTo
+- Sarius
+- Slums Attack
+- Te-Tris
+- Tede- Dudek P56
 - Dwa Sławy
 - Filipek
 - KaeN
@@ -92,6 +112,12 @@ artist_names :
 - Young Igi
 - Zeamsone
 - Zeus (POL)
+- Ten Typ Mes
+- VNM
+- Vkie
+- Young Igi
+- Zeamsone
+- Zeus (POL)
 
 top30:
 - Bonus RPK
@@ -104,7 +130,7 @@ top30:
 - KaeN
 - Kartky
 - Kaz Bałagane
-- Magiera
+- Łona_combined
 - O.S.T.R.
 - Paluch
 - Peja
@@ -131,3 +157,16 @@ Small:
 - Vkie
 - Piekielny
 - Klarenz
+
+top10:
+- Dudek P56
+- Kartky
+# - Łona_combined
+- Slums Attack
+- O.S.T.R.
+- Paluch
+- Peja
+- donGURALesko
+- White 2115
+- Young Igi
+- Tede

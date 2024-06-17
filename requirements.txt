@@ -17,3 +17,9 @@ spacy_fastlang
 datasets
 transformers
 seaborn
+unidecode
+sentence-transformers
+lightning
+xgboost
+tensorboard
+tensorflow

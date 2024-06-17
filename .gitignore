@@ -10,6 +10,7 @@ __pycache__
 /typings
 /notebooks/
 /ignore/
+/lightning_logs
 .conda
 .mypy_cache
 .idea
