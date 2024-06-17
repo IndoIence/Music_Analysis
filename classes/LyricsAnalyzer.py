@@ -15,18 +15,31 @@ nlp = spacy.load("pl_core_news_sm")
 
 def is_valid(token):
     return not (
-        token.is_punct or token.is_stop or token.is_bracket or token.pos_ == "SPACE" or token.is_digit or token.like_num
+        token.is_punct
+        or token.is_stop
+        or token.is_bracket
+        or token.pos_ == "SPACE"
+        or token.is_digit
+        or token.like_num
     )
 
 
 # TODO: load kurwa counters from file if they exist
 class LyricsAnalyzer:
-    def __init__(self, artists_num=100, word_limit=30000) -> None:
+    def __init__(
+        self,
+        artists: list[MyArtist] = [],
+        word_limit=30000,
+    ) -> None:
         self.word_limit = word_limit
-        self.artists = get_biggest_by_lyrics_len(artists_num)
-        self.counters = self.get_counters(word_limit=self.word_limit, artists=self.artists)
+        self.artists = get_biggest_by_lyrics_len(30) if not artists else artists
+        self.counters = self.get_counters(
+            word_limit=self.word_limit, artists=self.artists
+        )
 
-    def get_counters(self, word_limit: int, artists: list[MyArtist]) -> dict[str, Counter]:
+    def get_counters(
+        self, word_limit: int, artists: list[MyArtist]
+    ) -> dict[str, Counter]:
         arts = tqdm(artists)
         counters: dict[str, Counter] = {}
         for art in arts:
@@ -45,11 +58,17 @@ class LyricsAnalyzer:
         vocab_path = Path(CONFIG["vocab_path"])
         with open(vocab_path / f"{self.word_limit}.csv", "w") as f:
             f.write("Artist, Vocab_size\n")
-            for name, c in sorted(self.counters.items(), key=lambda x: len(x[1]), reverse=True):
+            for name, c in sorted(
+                self.counters.items(), key=lambda x: len(x[1]), reverse=True
+            ):
                 f.write(name + ", " + str(len(c)) + "\n")
         # save counters to a file
         if not (vocab_path / str(self.word_limit)).exists():
             (vocab_path / str(self.word_limit)).mkdir()
+        # remove all files in the directory
+        for f in (vocab_path / str(self.word_limit)).iterdir():
+            if f.is_file():
+                f.unlink()
         for art_name, c in self.counters.items():
             out_path = vocab_path / str(self.word_limit) / f"{art_name}.csv"
             with open(out_path, "w") as f:

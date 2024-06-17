@@ -52,7 +52,6 @@ def predict(index, text: str = sample_text, top_k: int = 3, raw=True):
     index_data, faiss_index = index
     # takes only the [CLS] embedding (for now)
     query = model(text, return_tensors="pt")[0][0].numpy().reshape(1, -1)
-
     scores, indices = faiss_index.search(query, top_k)
     scores, indices = scores.tolist(), indices.tolist()
     if raw:
@@ -92,6 +91,38 @@ def load_artists():
         yield get_artist(art_name)
 
 
+def get_song_wsd(lyrics: str, index_data):
+    text = song.get_clean_song_lyrics()
+    doc = nlp(text)
+    song_dict = {
+        "name": song.title,
+        "text": text,
+        "wsd": [],
+    }
+
+    for word, context in tqdm(input_from_doc(doc), song.title):
+        scores, indices, vector = predict(index, context)
+        suggestions = {}
+        # transform 2d lists (scores, indices) to human readable outputs
+        for lists in zip(scores, indices):
+            for score, cur_ind in zip(*lists):
+                plwn_id, sense_def = index_data[cur_ind]
+                sense, definition = sense_def
+                suggestions[plwn_id] = {
+                    "sense": sense,
+                    "definition": definition,
+                    "score": score,
+                }
+        song_dict["wsd"].append(
+            {
+                "word": word,
+                "vector": vector.tolist(),  # type: ignore
+                "suggestions": suggestions,
+            }
+        )
+    return song_dict
+
+
 if __name__ == "__main__":
     """
     in CONFIG file:
@@ -123,34 +154,7 @@ if __name__ == "__main__":
         limit_songs = artist.get_limit_songs(word_limit, only_art=True)
 
         for song in tqdm(limit_songs, f"{artist.name} songs"):
-            text = song.get_clean_song_lyrics()
-            doc = nlp(text)
-            song_dict = {
-                "name": song.title,
-                "text": text,
-                "wsd": [],
-            }
-
-            for word, context in tqdm(input_from_doc(doc), song.title):
-                scores, indices, vector = predict(index, context)
-                suggestions = {}
-                # transform 2d lists (scores, indices) to human readable outputs
-                for lists in zip(scores, indices):
-                    for score, cur_ind in zip(*lists):
-                        plwn_id, sense_def = index_data[cur_ind]
-                        sense, definition = sense_def
-                        suggestions[plwn_id] = {
-                            "sense": sense,
-                            "definition": definition,
-                            "score": score,
-                        }
-                song_dict["wsd"].append(
-                    {
-                        "word": word,
-                        "vector": vector.tolist(),
-                        "suggestions": suggestions,
-                    }
-                )
+            song_dict = get_song_wsd(song.get_clean_song_lyrics(), index_data)
             with open(Path(out_dir) / out_fname, "a") as f:
                 try:
                     json.dumps(

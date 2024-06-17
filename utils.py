@@ -5,7 +5,13 @@ from classes.MySong import MySong
 import json
 import pickle
 import heapq
+import faiss
 import os
+from transformers import pipeline
+from datasets import load_dataset
+from zipfile import ZipFile, ZIP_DEFLATED
+from typing import Iterable
+from unidecode import unidecode
 import yaml
 from tqdm import tqdm
 
@@ -19,15 +25,16 @@ def get_artist(
 ) -> MyArtist:
     if ext and ext[0] != ".":  # give dot to extension if it's not there
         ext = "." + ext
+    name = sanitize_art_name(name)
     p = path / (name + ext)
     return pickle.load(open(p, "rb"))
 
 
 def get_all_artists(path: Path = Path(CONFIG["artists_pl_path"])):
-    art_paths = [f for f in os.listdir(path) if os.path.isfile(path / f)]
+    art_paths = [f for f in path.iterdir() if f.is_file()]
     art_paths.sort()
     for art_path in tqdm(art_paths):
-        filename, ext = os.path.splitext(art_path)
+        filename, ext = art_path.stem, art_path.suffix
         art = get_artist(filename, path, ext)
         yield art
 
@@ -59,11 +66,22 @@ def get_biggest_by_lyrics_len(n: int = 50, only_art=True) -> list[MyArtist]:
 def all_artists_genius(
     genius_path: Path = Path(CONFIG["Genius_scraping"]["save_path"]),
 ):
-    f_names = os.listdir(genius_path)
+    f_names = genius_path.iterdir()
     for art_file in f_names:
         artist_path = genius_path / art_file
         a = MyArtist(pickle.load(open(artist_path, "rb")))
         yield a
+
+
+def recalc_my_artists(path: Path = Path(CONFIG["artists_pl_path"])):
+    """remove all artists from the path and save them again"""
+    # since artists are saved duirng iteration first getting the list of all files
+    for f in tqdm(list(path.iterdir())):
+        if not f.is_file():
+            continue
+        new_art = MyArtist(pickle.load(open(f, "rb")))
+        f.unlink()
+        new_art.to_pickle(path)
 
 
 def load_jsonl(p: Path):
@@ -73,23 +91,50 @@ def load_jsonl(p: Path):
 
 
 def sanitize_art_name(name: str) -> str:
-    return (
-        name.replace(" ", "_")
-        .replace(".", "_")
-        .replace("/", " ")
-        .replace("?", " ")
-        .replace("\u200b", "")
-        .replace("\u200c", "")
-        .strip()
-    )
+    translation_table: dict[int, str] = {
+        ord("."): "_",
+        ord(" "): "_",
+        ord("/"): "",
+        ord("?"): "",
+        ord("\u200c"): "",
+        ord("\u200b"): "",
+        ord("("): "",
+        ord(")"): "",
+    }
+    return name.translate(translation_table).strip()
 
 
-# def webstify(arts: list[MyArtist]):
-#     for art in arts:
-#         art.name = sanitize_art_name(art.name)
-#         for song in art.songs:
-#             song.title = sanitize_art_name(song.title)
-#     return arts
+def get_websty_input(
+    words_limit: int,
+    artists: Iterable[MyArtist] = [],
+    out_dir=Path(CONFIG["websty_path"]),
+):
+    txt_dir = out_dir / "txts"
+    txt_dir.mkdir(parents=True, exist_ok=True)
+    # remove all files in the txt_dir
+    [f.unlink() for f in txt_dir.iterdir() if f.is_file]
+
+    for art in tqdm(artists):
+        f_name = unidecode(art.name_sanitized) + ".txt"
+        songs = art.get_limit_songs(limit=words_limit, only_art=True, strict=True)
+        # save to file based on the format
+
+        out = ""
+        for i, song in enumerate(songs):
+            out += str(i) + "\n" + song.get_clean_song_lyrics(linebreaks=True) + "\n"
+        open(txt_dir / f_name, "w").write(out)
+
+    zip_websty(txt_dir)
+
+
+def zip_websty(dir: Path):
+    """
+    Zip all the txt files in the out_dir and save the into a parent direcotry
+    """
+    zip_name = "websty.zip"
+    with ZipFile(dir.parent / zip_name, "w", ZIP_DEFLATED) as zf:
+        for ff in (f for f in dir.iterdir() if f.is_file()):
+            zf.write(ff, ff.name)
 
 
 # def to_pkl(
@@ -111,10 +156,10 @@ def get_wsd_data():
     """for all artists return a tuple (file name, list)
     where list has wsd for each song"""
     path = Path(CONFIG["wsd"]["outputs"]).parent / "wsd"
-    wsd_files = [f for f in os.listdir(path) if os.path.isfile(path / f)]
+    wsd_files = [f for f in path.iterdir() if f.is_file()]
     for wsd_file in wsd_files:
         result = []
-        for song in load_jsonl(path / wsd_file):
+        for song in load_jsonl(wsd_file):
             result.append(song["wsd"])
         yield (wsd_file, result)
 
@@ -122,3 +167,31 @@ def get_wsd_data():
 def get_stopwords():
     path = CONFIG["stopwords"]
     return [line.rstrip() for line in open(path)]
+
+
+def get_wsd_model(gpu_nr: int):
+    """load and return wsd model, faiss index and faiss dataset
+    good idea to load the index to the gpu now"""
+
+    index_name = CONFIG["wsd"]["linking_index_name"]
+    model_name = CONFIG["wsd"]["model_name"]
+    auth_token = os.environ.get("CLARIN_KNEXT", "")
+    faiss_index_path = CONFIG["wsd"]["faiss_index_path"]
+    model = pipeline("feature-extraction", model=model_name, use_auth_token=auth_token)
+    ds = load_dataset(index_name, use_auth_token=auth_token)["train"]  # type: ignore
+    index_data = {
+        idx: (e_id, e_text)
+        for idx, (e_id, e_text) in enumerate(zip(ds["entities"], ds["texts"]))  # type: ignore
+    }
+    faiss_index = faiss.read_index(faiss_index_path, faiss.IO_FLAG_MMAP)
+    res = faiss.StandardGpuResources()
+    faiss_index = faiss.index_cpu_to_gpu(res, gpu_nr, faiss_index)
+    return model, index_data, faiss_index
+
+
+def wsd_predict(faiss_index, model, text: str, top_k: int = 3):
+    # takes only the [CLS] embedding (for now)
+    query = model(text, return_tensors="pt")[0][0].numpy().reshape(1, -1)
+    scores, indices = faiss_index.search(query, top_k)
+    scores, indices = scores.tolist(), indices.tolist()
+    return scores, indices, query

@@ -39,6 +39,9 @@ LAST_FM_FEATURES : False
 wsd:
   word_limit: 5000
   outputs : generated_data/wsd_outputs_fixed
+  model_name: clarin-knext/wsd-encoder
+  linking_index_name: clarin-knext/wsd-linking-index
+  faiss_index_path : ./ignore/encoder.faissindex
   artists:
   # - Łona_combined
   # - Bonus RPK

@@ -11,6 +11,7 @@ import zipfile
 def get_websty_input(one_artist_file=False, words_limit=10000):
     in_dir = Path(CONFIG["artists_pl_path"])
     out_dir = Path(CONFIG["websty_path"])
+    # remove all files in the out_dir
     [os.remove(f) for f in out_dir.iterdir() if f.is_file]
 
     artist_names = CONFIG["artist_names"]

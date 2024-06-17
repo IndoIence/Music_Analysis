@@ -44,6 +44,52 @@ def get_hypernym(lex_unit):
         pass
 
 
+def get_info_from_uuid(sense):
+
+    hypernym_1st = get_hypernym(sense)
+    hypernym_2nd = None
+    hypernym_3rd = None
+    if hypernym_1st:
+        hypernym_2nd = get_hypernym(hypernym_1st)
+    if hypernym_2nd:
+        hypernym_3rd = get_hypernym(hypernym_2nd)
+
+    aspect = sense.verb_aspect.name if sense.verb_aspect else "null"
+    hypernym_1st = "null" if not hypernym_1st else hypernym_1st.short_str()
+    hypernym_2nd = "null" if not hypernym_2nd else hypernym_2nd.short_str()
+    hypernym_3rd = "null" if not hypernym_3rd else hypernym_3rd.short_str()
+
+    sentiment = sense.emotion_markedness.name if sense.emotion_markedness else "null"
+    emotions = (
+        "|".join(emotion.name for emotion in sense.emotion_names if sense.emotion_names)
+        if sense.emotion_names
+        else "null"
+    )
+    valuations = (
+        "|".join(
+            value.name for value in sense.emotion_valuations if sense.emotion_valuations
+        )
+        if sense.emotion_valuations
+        else "null"
+    )
+    lemma = sense.lemma
+    pos = sense.pos.short_value
+    return {
+        "lemma": lemma,
+        "pos": pos,
+        "verb_aspect": aspect,
+        "sentiment": sentiment,
+        "emotions": emotions,
+        "valuations": valuations,
+        "synset": sense.synset.short_str(),
+        "domain": sense.domain.name,
+        "hypernym_1st": hypernym_1st,
+        "hypernym_2nd": hypernym_2nd,
+        "hypernym_3rd": hypernym_3rd,
+        # "register": sense.usage_notes, kurwa to daje mi tuple a nie stringa
+    }
+
+
 # %%
 wn = WordNet("./default_model")
 
@@ -84,48 +130,10 @@ with open("wordnet-analysis.tsv", "w") as ofile:
                     sense = wn.wn.lexical_unit_by_id(uuid)
                 except plwn.exceptions.LexicalUnitNotFound:
                     continue
-                hypernym_1st = get_hypernym(sense)
-                hypernym_2nd = None
-                hypernym_3rd = None
-                if hypernym_1st:
-                    hypernym_2nd = get_hypernym(hypernym_1st)
-                if hypernym_2nd:
-                    hypernym_3rd = get_hypernym(hypernym_2nd)
-
-                aspect = sense.verb_aspect if sense.verb_aspect else "null"
-                hypernym_1st = "null" if not hypernym_1st else hypernym_1st.short_str()
-                hypernym_2nd = "null" if not hypernym_2nd else hypernym_2nd.short_str()
-                hypernym_3rd = "null" if not hypernym_3rd else hypernym_3rd.short_str()
-
-                sentiment = (
-                    sense.emotion_markedness.name
-                    if sense.emotion_markedness
-                    else "null"
-                )
-                emotions = (
-                    "|".join(
-                        emotion.name
-                        for emotion in sense.emotion_names
-                        if sense.emotion_names
-                    )
-                    if sense.emotion_names
-                    else "null"
-                )
-                valuations = (
-                    "|".join(
-                        value.name
-                        for value in sense.emotion_valuations
-                        if sense.emotion_valuations
-                    )
-                    if sense.emotion_valuations
-                    else "null"
-                )
-                lemma = sense.lemma
-                pos = sense.pos.short_value
+                info = get_info_from_uuid(sense)
+                s = "\t".join(info.values())
                 # num_senses = len(wn.get_senses(lemma, pos))
-                ofile.write(
-                    f"{fname}\t{lemma}\t{pos}\t{aspect}\t{sentiment}\t{emotions}\t{valuations}\t{sense.synset.short_str()}\t{sense.domain.name}\t{hypernym_1st}\t{hypernym_2nd}\t{hypernym_3rd}\t{sense.usage_notes}\n"
-                )
+                ofile.write(f"{fname}\t{s}\n")
 
 
 # %%
