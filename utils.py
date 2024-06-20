@@ -4,6 +4,8 @@ from classes.MyArtist import MyArtist
 from classes.MySong import MySong
 import json
 import pickle
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
 import heapq
 import faiss
 import os
@@ -195,3 +197,54 @@ def wsd_predict(faiss_index, model, text: str, top_k: int = 3):
     scores, indices = faiss_index.search(query, top_k)
     scores, indices = scores.tolist(), indices.tolist()
     return scores, indices, query
+
+
+# def prepare_data(
+#     artists: Iterable[MyArtist],
+#     word_limit,
+#     only_art,
+#     labse=False,
+#     sentiment=False,
+#     label="artist",
+# ) -> pd.DataFrame:
+#     # i want just two columns: vectors and labels
+#     assert (label in ["artist", "date"], "label must be either 'artist' or 'date'")
+#     basic_vectorizer = CountVectorizer()
+#     data_list = []
+#     for artist in artists:
+#         songs = artist.get_limit_songs(word_limit, only_art=only_art)
+#         for song in tqdm(songs, desc=f"Processing {artist.name}"):
+#             clean_lyrics = song.get_clean_song_lyrics()
+#             data_point = {}
+#             if labse:
+#                 labse_vector = get_labse_vector(clean_lyrics)
+#                 data_point["labse_vector"] = labse_vector
+#             if sentiment:
+#                 ...
+#             data_point["artist"] = artist.name_sanitized
+#             data_point["text"] = clean_lyrics
+#             data_point["year"] = song.date["year"]
+
+#             data_list.append(data_point)
+#     df = pd.DataFrame(data_list)
+#     if label == "artist":
+#         df["encoded_label"] = basic_vectorizer.fit_transform(df["artist"])
+#     elif label == "date":
+#         df["encoded_label"] = df["year"]
+#     if
+
+#     return df
+
+
+def data_years(songs: Iterable[MySong]) -> pd.DataFrame:
+    data_points = []
+    for song in songs:
+        data_point = {}
+        if song.date is None:
+            continue
+        data_point["year"] = song.date["year"]
+        data_point["text"] = song.get_clean_song_lyrics()
+        data_point["artist"] = song.artist_name
+        data_point["title"] = song.title
+        data_points.append(data_point)
+    return pd.DataFrame(data_points)

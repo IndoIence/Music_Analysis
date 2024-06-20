@@ -76,7 +76,9 @@ class MyArtist(Artist):
         output = []
         for song in self.songs:
             if isinstance(song, Song) or isinstance(song, MySong):
-                output.append(MySong(song))
+                new_song = MySong(song)
+                new_song.artist = self.name_sanitized
+                output.append(new_song)
             else:
                 raise ValueError("song is not a Song or MySong")
         return output
@@ -112,7 +114,7 @@ class MyArtist(Artist):
         result = []
         for song in self.songs:
             # skip non-polish songs
-            if song.language != "pl":
+            if song.language != self.language:
                 continue
             if only_art and song._body["featured_artists"]:
                 continue
@@ -156,10 +158,11 @@ class MyArtist(Artist):
         file_name: str = "",
         suffix: str = ".artPkl",
     ):
+        # probably want artists_pl_path from CONFIG
         if file_name == "":
             file_name = self.name_sanitized
         # before saving check if there are any / or ? in the name -> if so replace them
-        if "/" in file_name or "?" in file_name:
+        elif "/" in file_name or "?" in file_name:
             file_name = file_name.replace("/", " ").replace("?", " ")
         with open(out_path / (file_name + suffix), "wb") as f:
             dump(self, f)

@@ -54,11 +54,11 @@ def get_info_from_uuid(sense):
     if hypernym_2nd:
         hypernym_3rd = get_hypernym(hypernym_2nd)
 
-    aspect = sense.verb_aspect.name if sense.verb_aspect else "null"
     hypernym_1st = "null" if not hypernym_1st else hypernym_1st.short_str()
     hypernym_2nd = "null" if not hypernym_2nd else hypernym_2nd.short_str()
     hypernym_3rd = "null" if not hypernym_3rd else hypernym_3rd.short_str()
 
+    aspect = sense.verb_aspect.name if sense.verb_aspect else "null"
     sentiment = sense.emotion_markedness.name if sense.emotion_markedness else "null"
     emotions = (
         "|".join(emotion.name for emotion in sense.emotion_names if sense.emotion_names)
@@ -126,10 +126,7 @@ with open("wordnet-analysis.tsv", "w") as ofile:
                 if not suggestions:
                     continue
                 uuid = next(iter(suggestions))
-                try:
-                    sense = wn.wn.lexical_unit_by_id(uuid)
-                except plwn.exceptions.LexicalUnitNotFound:
-                    continue
+
                 info = get_info_from_uuid(sense)
                 s = "\t".join(info.values())
                 # num_senses = len(wn.get_senses(lemma, pos))

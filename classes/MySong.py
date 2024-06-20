@@ -18,10 +18,35 @@ class MySong(Song):
             MySong._nlp.add_pipe("language_detector")
         return MySong._nlp
 
-    def __init__(self, song: Song):
+    def __init__(self, song: Song, art_name: str = ""):
         self.__dict__ = song.__dict__
         self.language: str = self._get_language()
         self.word_count: int = self._get_word_count()
+        self._sentiment: dict = {}
+        self._emotions: dict = {}
+        self.artist_name = art_name
+
+    @property
+    def sentiment(self):
+        return self._sentiment
+
+    @sentiment.setter
+    def sentiment(self, value):
+        self._sentiment = value
+
+    @property
+    def emotions(self):
+        return self._emotions
+
+    @emotions.setter
+    def emotions(self, value):
+        self._emotions = value
+
+    @property
+    def date(self):
+        return self._body.get(
+            "release_date_components", {"year": None, "month": None, "day": None}
+        )
 
     def get_clean_song_lyrics(self, lower=True, linebreaks=False):
         # find the first occurance of the word "Lyrics", and discard what's before that
@@ -51,7 +76,8 @@ class MySong(Song):
 
         # should ignore anything in the square brackets
         # usualy genius has indication of an artists singing there
-        lyrics_cleaned = clean_square_brackets(lyrics_cleaned)
+        pattern = r"\[.*?\]"
+        lyrics_cleaned = re.sub(pattern, "", lyrics_cleaned)
         lyrics_cleaned = lyrics_cleaned.replace("\u200b", "").replace("\u200c", "")
         lyrics_cleaned = lyrics_cleaned.strip()
         return lyrics_cleaned
@@ -64,8 +90,3 @@ class MySong(Song):
 
     def _get_word_count(self) -> int:
         return len(re.findall(r"\w+", self.get_clean_song_lyrics()))
-
-
-def clean_square_brackets(text):
-    pattern = r"\[.*?\]"
-    return re.sub(pattern, "", text)

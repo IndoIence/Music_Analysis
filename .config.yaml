@@ -10,6 +10,7 @@ websty_path : generated_data/websty
 korpusomat_path: scraped_data/korpusomat
 korpusomat_small_path: scraped_data/korpusomat_small
 corpus_path: output_data/corpus/
+wordnet_file: ./ignore/default_model
 stopwords : util_files/stopwords.txt
 Logging:
  wsd: logs/wsd.log
@@ -43,6 +44,7 @@ wsd:
   linking_index_name: clarin-knext/wsd-linking-index
   faiss_index_path : ./ignore/encoder.faissindex
   artists:
+  
   # - Łona_combined
   # - Bonus RPK
   # - Białas
@@ -165,11 +167,13 @@ top10:
 - Dudek P56
 - Kartky
 # - Łona_combined
-- Slums Attack
+# - Slums Attack
+- Białas
 - O.S.T.R.
 - Paluch
 - Peja
 - donGURALesko
-- White 2115
+# - White 2115
+- Taco Hemingway
 - Young Igi
 - Tede

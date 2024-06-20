@@ -19,32 +19,50 @@ from transformers import BertTokenizerFast
 
 
 class LyricsDataModule(pl.LightningDataModule):
-    def __init__(self, artists: Iterable[MyArtist], model, transforms, word_limit=4e4):
+    def __init__(
+        self,
+        artists: Iterable[MyArtist],
+        model,
+        transforms=[],
+        word_limit=4e4,
+        only_art=True,
+        labels_mode: str = "artist",
+    ):
         super().__init__()
         self.artists = artists
         self.word_limit = word_limit
+        self.only_art = only_art
         self.labse_model = model
         self.transforms = transforms
         self.labels_encoder = LabelEncoder()
         self.max_tokens_per_segment = model.tokenizer.model_max_length if model else 0
+        self.labels_mode = labels_mode
 
-    def prepare_data(self) -> pd.DataFrame:
+    def prepare_data(
+        self,
+    ) -> pd.DataFrame:
+        assert (
+            self.labels_mode in ["artist", "year"],
+            "label must be either 'artist' or 'year'",
+        )
         data_list = []
         for artist in self.artists:
-            songs = artist.get_limit_songs(self.word_limit, only_art=True)
+            songs = artist.get_limit_songs(self.word_limit, only_art=self.only_art)
             for song in tqdm(songs, desc=f"Processing {artist.name}"):
                 clean_lyrics = song.get_clean_song_lyrics()
+                data_point = {}
                 if "labse" in self.transforms:
                     labse_vector = self.get_labse_vector(clean_lyrics)
-                data_list.append(
-                    {
-                        "artist": artist.name_sanitized,
-                        "text": clean_lyrics,
-                        "labse_vector": labse_vector,
-                    }
-                )
+                    data_point["labse_vector"] = labse_vector
+                data_point["artist"] = artist.name_sanitized
+                data_point["text"] = clean_lyrics
+                data_point["year"] = song.date["year"]
+                data_list.append(data_point)
         df = pd.DataFrame(data_list)
-        df["encoded_label"] = self.labels_encoder.fit_transform(df["artist"])
+        if self.labels_mode == "artist":
+            df["encoded_label"] = self.labels_encoder.fit_transform(df["artist"])
+        elif self.labels_mode == "year":
+            df["encoded_label"] = df["year"]
         return df
 
     def get_labse_vector(self, text: str):
