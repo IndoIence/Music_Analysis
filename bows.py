@@ -1,5 +1,5 @@
 # %%
-from utils import get_biggest_by_lyrics_len, get_artist
+from utils import get_biggest_arts, get_artist
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sentence_transformers import SentenceTransformer
@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 # %%
 data_list = []
-biggest_artists = get_biggest_by_lyrics_len(10)
+biggest_artists = get_biggest_arts(10)
 # %%
 for art in biggest_artists:
     print(art.name)

@@ -2,7 +2,7 @@ import spacy.tokens
 import plwn
 import spacy
 
-from utils import get_biggest_by_lyrics_len, CONFIG, wsd_predict
+from utils import get_biggest_arts, CONFIG, wsd_predict
 from classes.MyArtist import MyArtist
 from classes.WordNet import WordNet
 from pathlib import Path
@@ -36,7 +36,7 @@ class LyricsAnalyzer:
         word_limit=30000,
     ) -> None:
         self.word_limit = word_limit
-        self.artists = get_biggest_by_lyrics_len(30) if not artists else artists
+        self.artists = get_biggest_arts(30) if not artists else artists
         self.counters = self.get_counters(
             word_limit=self.word_limit, artists=self.artists
         )

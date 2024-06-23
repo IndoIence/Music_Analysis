@@ -10,7 +10,7 @@ from sklearn.metrics import classification_report
 from sklearn.preprocessing import LabelEncoder
 import torch
 import torch.nn.functional as F
-from utils import get_biggest_by_lyrics_len, get_artist, CONFIG
+from utils import get_biggest_arts, get_artist, CONFIG
 from classes.MyArtist import MyArtist
 from typing import Iterator
 

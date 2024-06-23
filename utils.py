@@ -52,12 +52,19 @@ def get_all_urls():
     return sorted(set(urls))
 
 
-def get_biggest_by_lyrics_len(n: int = 50, only_art=True) -> list[MyArtist]:
+def get_biggest_arts(n: int = 50, only_art=True, mode="lyr") -> list[MyArtist]:
     heap: list[tuple[int, int, MyArtist]] = []
+    assert mode in [
+        "lyr",
+        "songs",
+    ], "mode must be either 'lyr_len' or 'songs_len'"
     for helper, artist in tqdm(
         enumerate(get_all_artists()), "sorting artists by lyrics length"
     ):
-        l = artist.lyrics_len_only_art if only_art else artist.lyrics_len_all
+        if mode == "lyr":
+            l = artist.lyrics_len_only_art if only_art else artist.lyrics_len_all
+        elif mode == "songs":
+            l = len(artist.solo_songs) if only_art else len(artist.songs)
         if len(heap) < n:
             heapq.heappush(heap, (l, helper, artist))
         else:
@@ -248,5 +255,5 @@ def data_years(songs: Iterable[MySong]) -> pd.DataFrame:
         data_point["title"] = song.title
         data_points.append(data_point)
     df = pd.DataFrame(data_points)
-    df = df.astype({'year': 'float32'})
+    df = df.astype({"year": "float32"})
     return df

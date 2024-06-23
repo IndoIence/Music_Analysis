@@ -6,7 +6,7 @@ import pandas as pd
 from xgboost import XGBClassifier
 from sklearn.preprocessing import normalize, OrdinalEncoder
 from sklearn.model_selection import train_test_split
-from utils import get_biggest_by_lyrics_len, get_artist, CONFIG
+from utils import get_biggest_arts, get_artist, CONFIG
 from sklearn.metrics import (
     accuracy_score,
     classification_report,

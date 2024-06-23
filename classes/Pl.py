@@ -190,55 +190,6 @@ class DataframeDataset(Dataset):
         return sample
 
 
-class TextClassificationModel(pl.LightningModule):
-    def __init__(self, output_dim, input_dim):
-        super(TextClassificationModel, self).__init__()
-        self.fc1 = nn.Linear(input_dim, int(input_dim**0.5))
-        self.fc2 = nn.Linear(int(input_dim**0.5), 128)
-        self.fc3 = nn.Linear(128, output_dim)
-        self.accuracy = torchmetrics.classification.Accuracy(
-            task="multiclass", num_classes=output_dim
-        )
-
-    def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
-
-    def training_step(self, batch, batch_idx):
-        vectors, labels = batch["vector"], batch["label"]
-        # label encoder is it necessary?
-        # should i get the
-        outputs = self.forward(vectors)
-        loss = F.cross_entropy(outputs, labels)
-        self.log("train_loss", loss)
-        self.accuracy(outputs, labels)
-        self.log("training_accuracy", self.accuracy)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        vectors, labels = batch["vector"], batch["label"]
-        outputs = self.forward(vectors)
-        loss = F.cross_entropy(outputs, labels)
-        self.log("val_loss", loss)
-        self.accuracy(outputs, labels)
-        self.log("validation_accuracy", self.accuracy)
-        return loss
-
-    def test_step(self, batch, batch_idx):
-        vectors, labels = batch["vector"], batch["label"]
-        outputs = self.forward(vectors)
-        loss = F.cross_entropy(outputs, labels)
-        self.log("test_loss", loss)
-        self.accuracy(outputs, labels)
-        self.log("test_accuracy", self.accuracy)
-        return loss
-
-    def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-3)
-
-
 class LabseDataModule(pl.LightningDataModule):
     def __init__(
         self,

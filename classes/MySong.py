@@ -44,9 +44,11 @@ class MySong(Song):
 
     @property
     def date(self):
-        return self._body.get(
-            "release_date_components", {"year": None, "month": None, "day": None}
-        )
+        return self._body["release_date_components"] or {
+            "year": None,
+            "month": None,
+            "day": None,
+        }
 
     def get_clean_song_lyrics(self, lower=True, linebreaks=False):
         # find the first occurance of the word "Lyrics", and discard what's before that
