@@ -3,6 +3,7 @@ from classes.MySong import MySong
 from pathlib import Path
 from copy import deepcopy
 from pickle import dump
+from typing import List, Union
 
 
 class MyArtist(Artist):
@@ -28,6 +29,10 @@ class MyArtist(Artist):
         }
         # self.lyrics_len: int = self.lyrics_len
         # self.nlp_doc = sel    out = ''f._get_nlp_docs(nlp)
+
+    @property
+    def solo_songs(self):
+        return [song for song in self.songs if not song._body["featured_artists"]]
 
     @property
     def lyrics_len_only_art(self):
@@ -70,7 +75,7 @@ class MyArtist(Artist):
             count += song.word_count
         return count
 
-    def _get_my_songs(self) -> list[MySong]:
+    def _get_my_songs(self) -> List[MySong]:
         if not hasattr(self, "songs") or not self.songs:
             return []
         output = []
@@ -97,11 +102,11 @@ class MyArtist(Artist):
     def get_limit_songs(
         # i don't know how to achieve a infinite int with type hints
         self,
-        limit: int | float = float("inf"),
+        limit=float("inf"),
         prim_art: bool = True,
         only_art: bool = False,
         strict: bool = False,
-    ) -> list[MySong]:
+    ) -> List[MySong]:
         """
         returns list of songs with the limit of words
         if strict == True the output can be none

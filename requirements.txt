@@ -24,3 +24,6 @@ xgboost
 tensorboard
 tensorflow
 tf-keras
+umap-learn
+hdbscan
+torchmetrics

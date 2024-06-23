@@ -247,4 +247,6 @@ def data_years(songs: Iterable[MySong]) -> pd.DataFrame:
         data_point["artist"] = song.artist_name
         data_point["title"] = song.title
         data_points.append(data_point)
-    return pd.DataFrame(data_points)
+    df = pd.DataFrame(data_points)
+    df = df.astype({'year': 'float32'})
+    return df
