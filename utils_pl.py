@@ -20,9 +20,7 @@ import torch.nn.functional as F
 import torchmetrics
 
 
-def save_confusion_matrix(
-    model, dm, vector_key="vector", fname="temp", dir_name="confusion_matrix"
-):
+def save_confusion_matrix(model, dm, dir_path: Path, vector_key="vector", fname="temp"):
 
     def get_confussion_matrix():
         outputs = []
@@ -54,9 +52,7 @@ def save_confusion_matrix(
         yticklabels=dm.labels_encoder.classes_,  # type: ignore
         ax=ax,
     )
-    plots_dir = Path(CONFIG["plots_path"]) / dir_name
-    plots_dir.mkdir(exist_ok=True)
-    f = plots_dir / (fname + ".png")
+    f = dir_path / (fname + ".png")
     plt.savefig(f, format="png", bbox_inches="tight")
 
 
@@ -115,7 +111,7 @@ class DataframeDataset(Dataset):
 
         if self.transform and "labse_vector" in sample:
             sample[self.vector_key] = torch.cat(
-                (sample[self.label_key], torch.from_numpy(sample["labse_vector"]))
+                (sample[self.vector_key], sample["labse_vector"])
             )
         return {"vector": sample[self.vector_key], "label": sample[self.label_key]}
 
@@ -246,7 +242,7 @@ class TextClassificationModel(pl.LightningModule):
         loss = F.cross_entropy(outputs, labels)
         self.log("train_loss", loss)
         self.accuracy(outputs, labels)
-        self.log("training_accuracy", self.accuracy)
+        self.log("training_accuracy", self.accuracy, on_step=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -257,17 +253,20 @@ class TextClassificationModel(pl.LightningModule):
         self.accuracy(outputs, labels)
         self.f1_score(outputs, labels)
         self.log("val_loss", loss)
-        self.log("validation_accuracy", self.accuracy, on_epoch=True, on_step=True)
-        self.log("f1 score", self.f1_score, on_epoch=True, on_step=True)
+        self.log("validation_accuracy", self.accuracy, on_step=True)
+        self.log("val_f1 score", self.f1_score, on_step=True)
         return loss
 
     def test_step(self, batch, batch_idx):
         vectors, labels = batch["vector"], batch["label"]
         outputs = self.forward(vectors)
+        # metrics
         loss = F.cross_entropy(outputs, labels)
-        self.log("test_loss", loss)
         self.accuracy(outputs, labels)
-        self.log("test_accuracy", self.accuracy)
+        self.f1_score(outputs, labels)
+        self.log("test_loss", loss)
+        self.log("test_accuracy", self.accuracy, on_step=True)
+        self.log("test_f1 score", self.f1_score, on_step=True)
         return loss
 
     def configure_optimizers(self):

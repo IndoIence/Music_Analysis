@@ -1,9 +1,10 @@
 # %%
 from utils import get_artist, CONFIG, get_biggest_arts
-import pytorch_lightning as pl
 from utils_pl import save_confusion_matrix, TextClassificationModel
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
+from pytorch_lightning import Trainer, seed_everything
+
 import os
 from pathlib import Path
 from utils_pl import save_confusion_matrix, LabseDataModule
@@ -30,6 +31,7 @@ def get_df(songs: list[MySong]):
                 "labse_vector": get_labse_vector(
                     song.get_clean_song_lyrics(), labse_model
                 ),
+                "title": song.title,
             }
         )
         # TODO: put vectorized text here maybe? No can't because tocenizer should be only from train
@@ -42,36 +44,50 @@ def get_df(songs: list[MySong]):
 # %%
 if __name__ == "__main__":
     # %%
-    max_epochs = 30
-    arts = get_biggest_arts(30, only_art=True, mode="songs")
-    songs = [song for a in arts for song in a.solo_songs[:150]]
-    df = get_df(songs)
-    name = "tfidf_30_artists"
-    conf_matrix = torchmetrics.classification.ConfusionMatrix(
-        task="multiclass",
-        num_classes=len(arts),
-    )
-    print(len(songs))
-    for transform in [[], ["labse"]]:
-        dm = LabseDataModule(
-            df, label_key="label", vector_key="count_vector", transforms=transform
-        )
-        dm.setup()
-        input_dim = dm.train_dataset[0]["vector"].shape[0]
-        output_dim = len(arts)
-        callbacks = [
-            EarlyStopping(monitor="val_loss", patience=5),
-            ModelCheckpoint(monitor="val_loss", mode="min"),
-        ]
-        model = TextClassificationModel(output_dim, input_dim)
-        t = pl.Trainer(max_epochs=max_epochs, log_every_n_steps=1, callbacks=callbacks)
-        t.fit(model, dm)
-        validate_output = t.validate(model, dataloaders=dm.val_dataloader())
-        f_name = name + "_labse" if "labse" in transform else name + "_no_labse"
-        save_confusion_matrix(model, dm, fname=f_name, dir_name="tfidf_confusion")
-        path = Path(t.checkpoint_callback.best_model_path).parent.parent
-        with open(path / "model_info.txt", "w") as f:
-            for key, val in validate_output[0].items():
-                f.write(f"{key}: {val}\n")
+    max_epochs = 20
+    seed_everything(41, workers=True)
+    arts10 = get_biggest_arts(10, only_art=True, mode="songs")
+    arts30 = get_biggest_arts(30, only_art=FTrue, mode="songs")
+    arts_list = [arts30, arts30]
+    song_limits = [100, 150]
+    vector_keys = ["tf_idf_vector", "count_vector"]
+    song_list = ""
+    for arts, limit in zip(arts_list, song_limits):
+        # alternate between solo_songs and songs
+        song_list = "songs" if song_list == "solo_songs" else "solo_songs"
+        songs = [song for a in arts for song in getattr(a, song_list)[:limit]]
+        df = get_df(songs)
+        df = df[df["text"] != ""]
+        for vector_key in vector_keys:
+            for transform in [[], ["labse"]]:
+                dm = LabseDataModule(
+                    df, label_key="label", vector_key=vector_key, transforms=transform
+                )
+                dm.setup()
+                input_dim = dm.train_dataset[0]["vector"].shape[0]
+                output_dim = len(arts)
+                callbacks = [
+                    EarlyStopping(
+                        monitor="val_loss",
+                        patience=5,
+                    ),
+                    ModelCheckpoint(monitor="val_loss", mode="min"),
+                ]
+                model = TextClassificationModel(output_dim, input_dim)
+                t = Trainer(
+                    max_epochs=max_epochs,
+                    log_every_n_steps=1,
+                    callbacks=callbacks,
+                    deterministic=True,
+                )
+                t.fit(model, dm)
+                test_output = t.test(model, dataloaders=dm.test_dataloader())
+                name = vector_key
+                f_name = name + "_labse" if "labse" in transform else name + "_no_labse"
+                path = Path(t.checkpoint_callback.best_model_path).parent.parent
+                save_confusion_matrix(model, dm, dir_path=path, fname=f_name)
+                with open(path / "model_info.txt", "w") as f:
+                    for key, val in test_output[0].items():
+                        f.write(f"{key}: {val}\n")
 
 # %%
