@@ -12,6 +12,7 @@ korpusomat_small_path: scraped_data/korpusomat_small
 corpus_path: output_data/corpus/
 wordnet_file: ./ignore/default_model
 stopwords : util_files/stopwords.txt
+tensorboard_data_path: plots/tensorboard_data
 Logging:
  wsd: logs/wsd.log
 

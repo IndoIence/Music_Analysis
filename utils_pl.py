@@ -20,27 +20,26 @@ import torch.nn.functional as F
 import torchmetrics
 
 
-def save_confusion_matrix(model, dm, dir_path: Path, vector_key="vector", fname="temp"):
+def get_confussion_matrix(model, dm, vector_key="vector"):
+    outputs = []
+    labels = []
 
-    def get_confussion_matrix():
-        outputs = []
-        labels = []
-        for batch in dm.val_dataloader():
-            vector = batch[vector_key]
-            label = batch["label"]
-            out = model(vector)
-            out = torch.argmax(out, dim=1)
-            outputs.extend(out)
-            labels.extend(label)
+    for batch in dm.val_dataloader():
+        vector = batch[vector_key]
+        label = batch["label"]
+        out = model(vector)
+        out = torch.argmax(out, dim=1)
+        outputs.extend(out)
+        labels.extend(label)
 
-        labels_to_names = dm.labels_encoder.inverse_transform(labels)
-        outputs = dm.labels_encoder.inverse_transform(outputs)
-        cm = confusion_matrix(
-            labels_to_names, outputs, labels=dm.labels_encoder.classes_
-        )
-        return cm
+    labels_to_names = dm.labels_encoder.inverse_transform(labels)
+    outputs = dm.labels_encoder.inverse_transform(outputs)
+    cm = confusion_matrix(labels_to_names, outputs, labels=dm.labels_encoder.classes_)
+    return cm, dm.labels_encoder.classes_
 
-    cm = get_confussion_matrix()
+
+def save_confusion_matrix(cm, labels, dir_path: Path, fname="temp"):
+
     fix, ax = plt.subplots(figsize=(8, 7))
     cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
     sns.heatmap(
@@ -48,11 +47,19 @@ def save_confusion_matrix(model, dm, dir_path: Path, vector_key="vector", fname=
         annot=True,
         fmt=".2f",
         cmap="Blues",
-        xticklabels=dm.labels_encoder.classes_,  # type: ignore
-        yticklabels=dm.labels_encoder.classes_,  # type: ignore
+        xticklabels=labels,  # type: ignore
+        yticklabels=labels,  # type: ignore
         ax=ax,
     )
     f = dir_path / (fname + ".png")
+
+    sec_x_ax = ax.secondary_xaxis("top")
+    sec_x_ax.set_xlabel("Predicted", fontsize=12, labelpad=15)
+    sec_x_ax.set_xticks([])
+    sec_y_ax = ax.secondary_yaxis("right")
+    sec_y_ax.set_ylabel("True", fontsize=12, labelpad=5)
+    sec_y_ax.set_yticks([])
+
     plt.savefig(f, format="png", bbox_inches="tight")
 
 

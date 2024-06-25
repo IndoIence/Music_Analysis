@@ -57,7 +57,7 @@ def get_biggest_arts(n: int = 50, only_art=True, mode="lyr") -> list[MyArtist]:
     assert mode in [
         "lyr",
         "songs",
-    ], "mode must be either 'lyr_len' or 'songs_len'"
+    ], "mode must be either 'lyr' or 'songs'"
     for helper, artist in tqdm(
         enumerate(get_all_artists()), "sorting artists by lyrics length"
     ):
