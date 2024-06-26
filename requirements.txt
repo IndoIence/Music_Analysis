@@ -27,3 +27,4 @@ tf-keras
 umap-learn
 hdbscan
 torchmetrics
+simpletransformers

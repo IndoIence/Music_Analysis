@@ -18,7 +18,7 @@ for artist in top10:
         song.sentiment = sentiment_count
         artist.to_pickle(out_file)
 print("----------------------------------")
-for artist in get_all_artists():
+for artist in get_biggest_arts(30)[::-1]:
     print(artist.name)
     for song in artist.songs:
         if hasattr(song, "_emotions") and hasattr(song, "_sentiment"):
