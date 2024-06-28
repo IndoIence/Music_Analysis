@@ -63,30 +63,6 @@ def save_confusion_matrix(cm, labels, dir_path: Path, fname="temp"):
     plt.savefig(f, format="png", bbox_inches="tight")
 
 
-# def get_labse_vector(text, labse_model, max_tokens_per_segment=256):
-
-#     def split_into_segments(text: str, tokenizer):
-#         len_no_special = (
-#             max_tokens_per_segment - 2
-#         )  # reserve 2 tokens for special tokens
-#         tokens = tokenizer.encode(text, add_special_tokens=False, padding=True)
-#         segments = [
-#             tokens[i : i + len_no_special]
-#             for i in range(0, len(tokens), len_no_special)
-#         ]
-#         for segment in segments:
-#             segment.insert(0, tokenizer.cls_token_id)  # type: ignore
-#             segment.append(tokenizer.sep_token_id)  # type: ignore
-#         text_segments = [tokenizer.decode(segment) for segment in segments]
-
-#         return text_segments
-
-#     text_segments = split_into_segments(text, labse_model.tokenizer)
-#     encoded = [labse_model.encode(segment) for segment in text_segments]
-#     averaged = np.mean(encoded, axis=0)
-#     return torch.tensor(averaged)
-
-
 class DataframeDataset(Dataset):
     def __init__(
         self,

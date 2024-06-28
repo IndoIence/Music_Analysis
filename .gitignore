@@ -15,8 +15,10 @@ __pycache__
 .mypy_cache
 .idea
 .vscode
-my_awesome_model
-wandb
+my_awesome_model/
+wandb/
+current_model/
+models/
 # files
 investigate.py
 wordnet-analysis.tsv

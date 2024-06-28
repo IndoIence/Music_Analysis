@@ -28,3 +28,4 @@ umap-learn
 hdbscan
 torchmetrics
 simpletransformers
+lime
