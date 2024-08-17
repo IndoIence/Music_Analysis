@@ -101,7 +101,7 @@ class BertDataModule(pl.LightningDataModule):
         return DataLoader(self.test_dataset, batch_size=8, num_workers=4)
 
 
-def songs_from_artists(
+def chunks_from_artists(
     arts: list[MyArtist],
     tokenizer,
     label2id: dict,
@@ -110,9 +110,17 @@ def songs_from_artists(
 ):
     assert mode in ["features", "solo"], "mode must be either 'features' or 'solo'"
     data = []
+    ids = set()
+    excluded_terms = ["- recenzja", "remix)", "mixtape", "remix]"]
+
     for art in arts:
         songs = art.songs if mode == "features" else art.solo_songs
         for song in songs[:song_limit]:
+            if song.title in ids or any(
+                term.lower() in song.title.lower() for term in excluded_terms
+            ):
+                continue
+            ids.add(song.id)
             clean_lyrics = song.get_clean_song_lyrics(lower=False)
             if clean_lyrics == "":
                 continue
@@ -123,28 +131,29 @@ def songs_from_artists(
                         "label": label2id[song.artist_name],
                         "input_ids": one_input,
                         "attention_mask": one_mask,
+                        "year": song.date["year"],
                     }
                 )
     return data
 
 
-def chunks_from_artists(
-    arts,
-    tokenizer,
-    label2id: dict,
-    song_limit: int = 300,
-):
-    inputs = []
-    attentions = []
-    labels = []
-    for art in arts:
-        for song in art.solo_songs[:song_limit]:
-            input_ids, attention_mask = transform_text(song.lyrics, tokenizer)
-            for one_input, one_mask in zip(input_ids, attention_mask):
-                inputs.append(one_input)
-                attentions.append(one_mask)
-                labels.append(label2id[song.artist_name])
-    return inputs, attentions, labels
+# def chunks_from_artists(
+#     arts,
+#     tokenizer,
+#     label2id: dict,
+#     song_limit: int = 300,
+# ):
+#     inputs = []
+#     attentions = []
+#     labels = []
+#     for art in arts:
+#         for song in art.solo_songs[:song_limit]:
+#             input_ids, attention_mask = transform_text(song.lyrics, tokenizer)
+#             for one_input, one_mask in zip(input_ids, attention_mask):
+#                 inputs.append(one_input)
+#                 attentions.append(one_mask)
+#                 labels.append(label2id[song.artist_name])
+#     return inputs, attentions, labels
 
 
 def tokenize(text, tokenizer: DistilBertTokenizer) -> tuple[Tensor, Tensor]:

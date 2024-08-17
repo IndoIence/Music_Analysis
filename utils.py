@@ -257,3 +257,17 @@ def data_years(songs: Iterable[MySong]) -> pd.DataFrame:
     df = pd.DataFrame(data_points)
     df = df.astype({"year": "float32"})
     return df
+
+
+def split_into_year_buckets(l: list[float]) -> list[int]:
+    buckets = []
+    for year in l:
+        if year < 2011:
+            buckets.append(0)
+        elif year < 2016:
+            buckets.append(1)
+        elif year < 2020:
+            buckets.append(2)
+        else:
+            buckets.append(3)
+    return buckets

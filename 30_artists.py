@@ -38,8 +38,10 @@ def get_df(songs: list[MySong]):
                 "text": song.get_clean_song_lyrics(),
                 "artist": song.artist_name,
                 "year": song.date["year"],
-                "labse_vector": get_labse_vector(
-                    song.get_clean_song_lyrics(), labse_model
+                "labse_vector": (
+                    song.labse_vector
+                    if hasattr(song, "labse_vector") and song.labse_vector is not None
+                    else get_labse_vector(song.get_clean_song_lyrics(), labse_model)
                 ),
                 "title": song.title,
             }
@@ -90,7 +92,7 @@ if __name__ == "__main__":
     max_epochs = 20
     seed_everything(41, workers=True)
     # arts10 = get_biggest_arts(10, only_art=True, mode="songs")
-    arts30 = get_biggest_arts(30, only_art=True, mode="songs")
+    arts_list = get_biggest_arts(10, only_art=True, mode="songs")
     # arts_list = [arts10, arts10, arts30, arts30]
     # song_limits = [180, 360, 100, 150]
     # vector_keys = ["tf_idf_vector", "count_vector"]
@@ -104,13 +106,25 @@ if __name__ == "__main__":
     #     for vector_key in vector_keys:
     #         for transform in [[], ["labse"]]:
     #             do(df, vector_key, transform, max_epochs, arts)
-    df = get_df([song for a in arts30 for song in a.songs[:180]])
+    # %%
+    df = get_df([song for a in arts_list for song in a.songs[:300]])
     df = df[df["text"] != ""]
     # %%
-    vector_keys = "count_vector"
-    model, dm, path = do(df, vector_keys, [], max_epochs, arts30)
+    vector_keys = "tf_idf_vector"
+    model, dm, path = do(df, vector_keys, [], max_epochs, arts_list)
     # %%
     cm, labels = get_confussion_matrix(model, dm)
+    # %%
+    cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
+    sns.heatmap(
+        cm,
+        # fmt=".2f", inst so don't need it
+        cmap="Blues",
+        xticklabels=labels,
+        yticklabels=labels,
+        # ax=ax,
+    )
+    # %%
     save_confusion_matrix(cm, labels, path, fname="confusion_matrix.png")
 
     # %%

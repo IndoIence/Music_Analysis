@@ -20,7 +20,7 @@ import torch.nn.functional as F
 import torchmetrics
 
 
-def get_confussion_matrix(model, dm, vector_key="vector"):
+def get_confussion_matrix(model, dm, vector_key="vector", normalize=False):
     outputs = []
     labels = []
 
@@ -35,16 +35,23 @@ def get_confussion_matrix(model, dm, vector_key="vector"):
     labels_to_names = dm.labels_encoder.inverse_transform(labels)
     outputs = dm.labels_encoder.inverse_transform(outputs)
     cm = confusion_matrix(labels_to_names, outputs, labels=dm.labels_encoder.classes_)
+    if normalize:
+        cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
     return cm, dm.labels_encoder.classes_
 
 
-def save_confusion_matrix(cm, labels, dir_path: Path, fname="temp"):
+def save_confusion_matrix(
+    cm, labels, dir_path: Path, fname="temp", annot=True, normalize=False
+):
 
     fix, ax = plt.subplots(figsize=(8, 7))
     cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
+    # get percentages instead of counts
+    if normalize:
+        cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
     sns.heatmap(
         cm,
-        annot=True,
+        annot=annot,
         fmt=".2f",
         cmap="Blues",
         xticklabels=labels,  # type: ignore
@@ -225,7 +232,7 @@ class TextClassificationModel(pl.LightningModule):
         loss = F.cross_entropy(outputs, labels)
         self.log("train_loss", loss)
         self.accuracy(outputs, labels)
-        self.log("training_accuracy", self.accuracy, on_step=True)
+        self.log("training_accuracy", self.accuracy, on_step=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):

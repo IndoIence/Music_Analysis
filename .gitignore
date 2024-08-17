@@ -11,6 +11,7 @@ __pycache__
 /notebooks/
 /ignore/
 /lightning_logs
+/year_bert_classifier
 .conda
 .mypy_cache
 .idea

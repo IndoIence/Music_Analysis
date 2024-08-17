@@ -25,6 +25,7 @@ class MySong(Song):
         self._sentiment: dict = {}
         self._emotions: dict = {}
         self.artist_name = art_name
+        self.labse_vector = None
 
     @property
     def sentiment(self):
